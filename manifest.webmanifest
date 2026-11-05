@@ -1,0 +1,26 @@
+{
+  "name": "ProteRad — Protect. Record. Ready.",
+  "short_name": "ProteRad",
+  "description": "Rekaman proteksi radiasi untuk Petugas Proteksi Radiasi rumah sakit.",
+  "id": "./",
+  "start_url": "./#/",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
+  "background_color": "#F2F3F5",
+  "theme_color": "#121212",
+  "lang": "id",
+  "categories": ["medical", "productivity"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Kalender Kepatuhan", "url": "./#/kalender", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Kartu Dosis", "url": "./#/dosis", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Siap Inspeksi", "url": "./#/inspeksi", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
