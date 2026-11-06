@@ -84,12 +84,11 @@
   // ---------- QR pintu ----------
   function qr(id) {
     const r = L.get('Ruangan', id); if (!r) return U.empty('Ruangan tidak ditemukan.');
-    const link = `${PR.appBase()}#/pintu?b=${encodeURIComponent(A.bId())}&r=${encodeURIComponent(id)}`;
     return `<div class="doc-sheet qr-a4"><div class="hazard" style="margin:-32px -36px 24px;height:16px"></div><div style="display:flex;justify-content:center">${PR.logo()}</div>
       <h1 style="font-size:40px;margin:16px 0 4px">${PR.esc(r.nama)}</h1><p class="center" style="margin:0">${PR.esc(L.rs().nama || '')}${r.lantai ? ' · ' + PR.esc(r.lantai) : ''}</p>
       <div class="qrbox" id="qrDoor" style="margin:28px auto;width:320px;height:320px"></div>
-      <p class="center" style="font:700 22px var(--fh);text-transform:uppercase;letter-spacing:.04em">Pindai untuk melihat status paparan ruangan</p>
-      <p class="center small">Menampilkan status area & tanggal survei terakhir. Tanpa login, tanpa data pribadi.</p><p class="center mono tiny muted" style="word-break:break-all">${PR.esc(link)}</p>
+      <p class="center" style="font:700 22px var(--fh);">Pindai untuk melihat status paparan ruangan</p>
+      <p class="center small">Menampilkan status area & tanggal survei terakhir. Tanpa login, tanpa data pribadi.</p><p class="center mono tiny muted" id="qrLink" style="word-break:break-all"></p>
       <div class="hazard" style="margin:24px -36px -32px;height:16px"></div></div>`;
   }
 
@@ -113,7 +112,7 @@
     },
     mount: async (root, r) => {
       const k = r.parts[0];
-      if (k === 'qr') { const el = PR.$('#qrDoor', root); if (el) { try { await PR.qr(`${PR.appBase()}#/pintu?b=${encodeURIComponent(A.bId())}&r=${encodeURIComponent(r.parts[1])}`, el); } catch (e) { el.textContent = 'QR gagal dibuat (periksa koneksi).'; } } }
+      if (k === 'qr') { const el = PR.$('#qrDoor', root); if (el) { try { const d = await A.call('doorLink', { id: r.parts[1] }); await PR.qr(d.link, el); const t = PR.$('#qrLink', root); if (t) t.textContent = d.link; } catch (e) { el.textContent = 'QR gagal dibuat: ' + e.message; } } }
       if (k === 'denah') { const dn = L.get('Denah', r.parts[1]), img = PR.$('#pImg', root); if (img && dn && dn.file_id) { try { img.src = (await A.file(dn.file_id)).url; } catch (e) { } } }
     }
   });

@@ -9,17 +9,20 @@
   const sops = () => L.tb('Dokumen').filter(d => d.kategori === 'SOP');
   const isRead = s => L.tb('Baca_SOP').some(b => b.dokumen_id === s.id && String(b.revisi) === String(s.revisi));
   const unread = () => sops().filter(s => !isRead(s));
-  const saveLocal = () => { try { const k = 'pr_' + (A.bId() || 'x').slice(-10) + '_cache'; const c = JSON.parse(localStorage.getItem(k) || 'null'); if (c) { c.tables = PR.db; localStorage.setItem(k, JSON.stringify(c)); } } catch (e) { } };
+  const saveLocal = () => { try { A.saveCache(); } catch (e) { } };
 
+  let thn = null;
+  const tahunAda = () => { const ys = new Set([PR.year()]); L.tb('Dosis').forEach(d => d.tahun && ys.add(+d.tahun)); return [...ys].sort((a, b) => b - a); };
+  PR.acts.pYear = el => { thn = +el.value; PR.render(); };
   function dosis() {
-    const w = me(), yr = PR.year(), s = L.doseStatus(w, yr), lp = L.tb('Dosis').slice().sort((a, b) => (b.tahun + b.periode).localeCompare(a.tahun + a.periode))[0];
+    const w = me(), yr = thn || PR.year(), s = L.doseStatus(w, yr), lp = L.tb('Dosis').slice().sort((a, b) => (b.tahun + b.periode).localeCompare(a.tahun + a.periode))[0];
     const dc = s.dc, ref = dc || L.NBD().pekerja_rata5;
     const q = [1, 2, 3, 4].map(i => ({ l: 'TW' + i, v: s.q[i] ? PR.n(s.q[i].hp10) : null, c: lp && +lp.tahun === yr && lp.periode === 'TW' + i ? '#F0B33E' : '#CFCDC6', hl: lp && +lp.tahun === yr && lp.periode === 'TW' + i }));
     const inv = L.tb('Investigasi').find(x => +x.tahun === yr);
-    return `<div class="card"><div class="spread"><div><b style="font-size:17px">${PR.esc(w.nama)}</b><div class="small muted">${PR.esc(w.profesi)}</div></div><span class="tag">Aktif</span></div><div class="row mt8 small mono"><span>NPR ${PR.esc(w.npr || '—')}</span></div></div>
+    return `<div class="card"><div class="spread"><div><b style="font-size:17px">${PR.esc(w.nama)}</b><div class="small muted">${PR.esc(w.profesi)}</div></div><span class="tag">Aktif</span></div><div class="spread mt8"><span class="small mono">NPR ${PR.esc(w.npr || '—')}</span>${tahunAda().length > 1 ? `<label class="small row" style="gap:6px">Tahun <select class="inp" style="height:34px;width:auto" data-change="pYear">${tahunAda().map(y => `<option value="${y}" ${y === yr ? 'selected' : ''}>${y}</option>`).join('')}</select></label>` : ''}</div></div>
       <div class="card"><div class="spread"><span class="eyebrow">Status dosis tahunan ${yr}</span>${L.doseTag(s.status)}</div>
         <div class="statement mt8">Anda menerima ${PR.pct(s.sum / ref)} dari ${dc ? 'pembatas dosis' : 'nilai batas dosis'} tahunan</div>
-        <p class="small muted" style="margin:6px 0 12px">${s.status === 'aman' ? 'Dosis Anda tahun ini jauh di bawah batas.' : s.status === 'tinjau' ? 'Mendekati pembatas dosis — PPR akan meninjau penugasan bila perlu.' : 'Di atas pembatas dosis — PPR sedang menganalisis penyebabnya. Ini bukan pelanggaran.'}</p>
+        <p class="small muted" style="margin:6px 0 12px">${s.status === 'aman' ? (yr === PR.year() ? 'Dosis Anda tahun ini jauh di bawah batas.' : 'Dosis Anda pada tahun itu jauh di bawah batas.') : s.status === 'tinjau' ? 'Mendekati pembatas dosis — PPR akan meninjau penugasan bila perlu.' : 'Di atas pembatas dosis — PPR sedang menganalisis penyebabnya. Ini bukan pelanggaran.'}</p>
         <div class="spread tiny mono muted"><span>0 mSv</span>${dc ? `<span>DC ${PR.f(dc)} mSv</span>` : ''}<span>NBD ${L.NBD().pekerja_rata5} mSv</span></div>
         <div class="bar mt8" style="height:10px"><i style="width:${Math.min(100, s.sum / L.NBD().pekerja_rata5 * 100)}%"></i>${dc ? `<span style="position:absolute;left:${dc / L.NBD().pekerja_rata5 * 100}%;top:-4px;bottom:-4px;width:2px;background:var(--y-h)"></span>` : ''}</div>
         <p class="small mono" style="margin:8px 0 0">Total ${yr}: <b>${PR.f(s.sum)} mSv</b>${w.kategori === 'intervensional' ? ` · Lensa Hp(3): <b>${PR.f(s.lens)} mSv</b>` : ''}</p></div>
@@ -52,11 +55,11 @@
     return `<div class="card"><span class="avatar" style="width:52px;height:52px;font-size:20px">${PR.esc(PR.initials(w.nama))}</span><h2 class="mt8">${PR.esc(w.nama)}</h2><p class="small muted" style="margin:4px 0 0">${PR.esc(w.profesi)} · ${PR.esc((L.rs() || {}).nama || '')}</p></div>
       <div class="card"><dl class="kv"><dt>NPR</dt><dd class="mono">${PR.esc(w.npr || '—')}</dd><dt>Email</dt><dd class="small">${PR.esc(w.email || '—')}</dd><dt>No. HP</dt><dd class="mono">${PR.esc(w.no_hp || '—')}</dd><dt>Metode masuk</dt><dd>${PR.esc(w.metode || '—')}</dd><dt>Pelatihan terakhir</dt><dd>${PR.d(w.pelatihan_terakhir)}</dd></dl></div>
       <div class="card"><div class="eyebrow">Pemeriksaan kesehatan (MCU)</div>${m ? `<div class="row mt8">${PR.tag(m.kesimpulan, m.kesimpulan === 'Laik kerja' ? 'aman' : 'tinjau', 1)}<span class="small">berlaku s.d. <b>${PR.d(m.berlaku_sd)}</b> ${PR.dueTag(PR.left(m.berlaku_sd))}</span></div>${m.pembatasan ? `<p class="small" style="background:var(--sub);padding:8px;margin:8px 0 0">${PR.esc(m.pembatasan)}</p>` : ''}` : '<p class="small muted">Belum ada data MCU.</p>'}</div>
-      <div class="stack" style="gap:10px">${w.metode === 'QR + PIN' ? `<button class="btn btn-b" style="height:48px" data-act="pPin">${PR.ic('key-round')}Ganti PIN</button>` : ''}${PR.installEvt ? `<button class="btn btn-b" style="height:48px" data-act="install">${PR.ic('monitor-smartphone')}Pasang aplikasi</button>` : ''}<button class="btn btn-b" style="height:48px" data-act="logout">${PR.ic('log-out')}Keluar</button></div>
+      <div class="stack" style="gap:10px">${w.metode === 'QR + PIN' || PR.api.mode() === 'akses' ? `<button class="btn btn-b" style="height:48px" data-act="pPin">${PR.ic('key-round')}Ganti PIN</button>` : ''}${PR.installEvt ? `<button class="btn btn-b" style="height:48px" data-act="install">${PR.ic('monitor-smartphone')}Pasang aplikasi</button>` : ''}<button class="btn btn-b" style="height:48px" data-act="logout">${PR.ic('log-out')}${PR.api.mode() === 'akses' ? 'Kunci' : 'Keluar'}</button>${PR.api.mode() === 'akses' ? `<button class="btn btn-b btn-g" style="height:44px" data-act="hapusAkses">${PR.ic('trash-2')}Hapus akses dari HP ini</button>` : ''}</div>
       <p class="small muted mt" style="text-align:center">Data Anda hanya dapat dilihat oleh Anda dan PPR.</p>`;
   }
   function kartu() {
-    const w = me(), ys = []; for (let y = PR.year() - 4; y <= PR.year(); y++) ys.push(y);
+    const w = me(), ys = tahunAda().slice().reverse(); if (ys.length < 5) { ys.length = 0; for (let y = PR.year() - 4; y <= PR.year(); y++) ys.push(y); }
     return `<div class="no-print row mb"><a class="btn" href="#/saya">${PR.ic('arrow-left')}Kembali</a><button class="btn btn-y" data-act="print">${PR.ic('printer')}Cetak / simpan PDF</button></div>
       <div class="doc-sheet" style="padding:20px"><h1 style="font-size:18px">Kartu dosis pekerja radiasi</h1><p class="center small">${PR.esc((L.rs() || {}).nama || '')}</p>
       <div class="kv2 mt"><div><small>Nama</small>${PR.esc(w.nama)}</div><div><small>NPR</small>${PR.esc(w.npr)}</div><div><small>Profesi</small>${PR.esc(w.profesi)}</div><div><small>Dicetak</small>${PR.d(PR.today())}</div></div>

@@ -1,4 +1,4 @@
-/* AlaraGo — Masuk, hubungkan backend, QR + PIN pekerja, wizard penyiapan awal */
+/* AlaraGo — Masuk (Google), aktivasi QR + PIN, buka PIN, wizard penyiapan awal */
 (function (PR) {
   'use strict';
   const U = PR.ui, A = PR.api;
@@ -13,102 +13,108 @@
   const card = inner => `<div class="center-wrap"><div class="auth-card"><div class="hazard"></div><div class="in">
     <div class="auth-brand">${PR.logo()}<div><b>AlaraGo</b><span>Protect. Record. Ready.</span></div></div>${inner}</div></div></div>`;
 
-  async function afterLogin(d, remember) {
-    A.setSession(d.session); PR.me = d.me;
+  const cfg = () => window.PR_CONFIG || {};
+  async function masukSelesai() {
     try { await A.boot(true); } catch (e) { PR.toast(e.message, 'err'); return; }
-    PR.go(PR.me.role === 'pekerja' ? '#/saya' : PR.me.role === 'peninjau' ? '#/persetujuan' : '#/dasbor');
+    const role = PR.me && PR.me.role;
+    PR.go(role === 'pekerja' ? '#/saya' : role === 'peninjau' ? '#/persetujuan' : '#/dasbor');
   }
+  const pad = (stage, len, msg) => `<div class="pin-boxes" aria-live="polite">${[0, 1, 2, 3, 4, 5].map(i => `<i class="${i === len ? 'on' : ''}">${i < len ? '•' : ''}</i>`).join('')}</div>
+    ${msg ? `<div class="small" style="color:var(--crit);margin:-8px 0 10px">${PR.esc(msg)}</div>` : ''}
+    <div class="keypad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(k => `<button data-k="${k}">${k}</button>`).join('')}<button class="sub" data-k="c">Hapus</button><button data-k="0">0</button><button class="sub" data-k="b" aria-label="Hapus satu">${PR.ic('arrow-left')}</button></div>`;
 
   // ================= MASUK =================
   PR.page('masuk', {
     full: true, title: 'Masuk',
-    render: r => {
-      if (A.session() && PR.me) setTimeout(() => PR.go('#/dasbor'), 0);
-      const url = A.url() && !A.isDemo() ? A.url() : '';
-      if (!url) return card(`<h2>Masuk</h2><p class="muted" style="margin:6px 0 20px">Kelola rekaman proteksi radiasi fasilitas Anda.</p>
-        <div class="f"><label for="burl">Alamat backend AlaraGo (URL /exec)</label><input class="inp mono" id="burl" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off"><div class="help">Didapat setelah memasang backend di akun Google Anda (lihat panduan instalasi).</div><div class="err" id="berr" hidden></div></div>
-        <button class="btn btn-y btn-b mt" data-act="connect">${PR.ic('link')}Hubungkan</button>
+    render: () => {
+      const ada = PR.akses && PR.akses.tersimpan();
+      const kurang = !cfg().GOOGLE_CLIENT_ID || !cfg().RELAY_URL;
+      return card(`<h2>Masuk</h2><p class="muted" style="margin:6px 0 20px">Rekaman proteksi radiasi fasilitas Anda, tersimpan di Google Drive Anda sendiri.</p>
+        ${kurang ? `<div class="ban ban-warn">${PR.ic('triangle-alert')}<div class="grow small">Pengaturan aplikasi belum lengkap (${!cfg().GOOGLE_CLIENT_ID ? 'GOOGLE_CLIENT_ID' : ''}${!cfg().GOOGLE_CLIENT_ID && !cfg().RELAY_URL ? ' & ' : ''}${!cfg().RELAY_URL ? 'RELAY_URL' : ''} di js/config.js).</div></div>` : ''}
+        <button class="btn btn-y btn-b" style="height:48px" data-act="loginPPR" ${kurang ? 'disabled' : ''}>${PR.ic('user')}Masuk dengan Google</button>
+        <p class="small muted" style="margin:8px 0 0;text-align:center">Untuk Petugas Proteksi Radiasi. Pertama kali, AlaraGo membuat folder & spreadsheet di Drive Anda.</p>
+        <div class="ban ban-crit mt8" id="lerr" hidden></div>
+        <div class="divider">Pekerja & peninjau</div>
+        ${ada ? `<a class="rowbtn" href="#/pin" style="margin-bottom:8px">${PR.ic('lock', 'ic-l')}<div style="flex:1"><b>Buka portal saya</b><span>Akses sudah tersimpan di perangkat ini — masukkan PIN</span></div>${PR.ic('chevron-right')}</a>` : ''}
+        <button class="rowbtn" data-act="qrHelp">${PR.ic('qr-code', 'ic-l')}<div style="flex:1"><b>Punya QR dari PPR?</b><span>Pindai QR dengan kamera HP, lalu buat PIN</span></div>${PR.ic('chevron-right')}</button>
         <div class="divider">Atau</div>
         <button class="rowbtn" data-act="startDemo" style="border-style:dashed">${PR.ic('play')}<div style="flex:1"><b><span class="tag t-y">Uji coba</span> Lihat demo</b><span>Jelajahi semua fitur dengan data contoh, tanpa memasang apa pun</span></div>${PR.ic('chevron-right')}</button>
-        <p class="small muted mt" style="text-align:center">${PR.ic('lock', 'ic-s')} Data tersimpan di akun Google Anda sendiri.</p>`);
-      const cid = (window.PR_CONFIG || {}).GOOGLE_CLIENT_ID;
-      return card(`<h2>Masuk</h2><p class="muted" style="margin:6px 0 20px">Kelola rekaman proteksi radiasi fasilitas Anda.</p>
-        ${cid ? `<div class="gbtn" id="gbtn"><div class="sk" style="width:100%;height:40px"></div></div>` : `<div class="ban ban-warn">${PR.ic('triangle-alert')}<div class="grow small">GOOGLE_CLIENT_ID belum diisi di <span class="mono">js/config.js</span>. Lihat panduan instalasi bagian “Login Google”.</div></div>`}
-        <label class="chk mt8" style="justify-content:center"><input type="checkbox" id="remember" checked> Ingat perangkat ini (90 hari)</label>
-        <div class="ban ban-crit mt8" id="lerr" hidden></div>
-        <div class="divider">Atau</div>
-        <button class="rowbtn" data-act="qrHelp">${PR.ic('qr-code', 'ic-l')}<div style="flex:1"><b>Pekerja tanpa Gmail?</b><span>Masuk dengan QR + PIN</span></div>${PR.ic('chevron-right')}</button>
-        <p class="small muted mt" style="text-align:center">${PR.ic('lock', 'ic-s')} Data tersimpan di akun Google Anda sendiri.<br><button class="link small" data-act="changeBackend">Ganti alamat backend</button> · <button class="link small" data-act="startDemo">Lihat demo</button></p>`);
-    },
-    mount: async root => {
-      const el = PR.$('#gbtn', root); if (!el) return;
-      try {
-        await PR.loadScript('https://accounts.google.com/gsi/client');
-        google.accounts.id.initialize({ client_id: window.PR_CONFIG.GOOGLE_CLIENT_ID, callback: async resp => {
-          const err = PR.$('#lerr'); err.hidden = true;
-          try { const d = await A.call('login', { idToken: resp.credential, remember: PR.$('#remember').checked }); await afterLogin(d); }
-          catch (e) { err.hidden = false; err.innerHTML = `${PR.tag('kritis', 'kritis', 1)}<div class="grow small">${PR.esc(e.message)}</div>`; }
-        }, ux_mode: 'popup', auto_select: false });
-        el.innerHTML = ''; google.accounts.id.renderButton(el, { theme: 'outline', size: 'large', text: 'signin_with', shape: 'rectangular', locale: 'id', width: Math.min(376, el.offsetWidth || 376) });
-      } catch (e) { el.innerHTML = `<div class="small muted">Tombol Google gagal dimuat. Periksa koneksi.</div>`; }
+        <p class="small muted mt" style="text-align:center">${PR.ic('lock', 'ic-s')} <a href="privasi.html">Kebijakan privasi</a></p>`);
     }
   });
-  PR.acts.connect = async () => {
-    const v = PR.$('#burl').value.trim(), err = PR.$('#berr');
-    const id = A.depId(v); if (!id) { err.hidden = false; err.textContent = 'Format URL tidak dikenali. Tempel URL yang diakhiri /exec.'; return; }
-    const url = A.urlFromId(id); err.hidden = true; PR.toast('Memeriksa backend…');
+  PR.acts.loginPPR = async el => {
+    const err = PR.$('#lerr'); err.hidden = true; el.disabled = true;
     try {
-      const j = await (await fetch(url + '?action=ping')).json();
-      if (!j.success) throw new Error(j.message);
-      if (!j.data.ready) { err.hidden = false; err.textContent = 'Backend ditemukan, tetapi setupAppEnvironment() belum dijalankan.'; return; }
-      A.setUrl(url); PR.toast('Backend terhubung', 'ok'); PR.render();
-    } catch (e) { err.hidden = false; err.textContent = 'Tidak dapat menghubungi backend. Pastikan deployment "Who has access: Anyone". (' + e.message + ')'; }
+      const u = await PR.drive.login();
+      A.setUrl('drive'); A.setSession('drive');
+      PR.toast('Masuk sebagai ' + u.email, 'ok');
+      await masukSelesai();
+    } catch (e) { err.hidden = false; err.innerHTML = `${PR.ic('circle-x')}<div class="grow small">${PR.esc(e.message)}</div>`; }
+    finally { el.disabled = false; }
   };
-  PR.acts.changeBackend = () => { A.setUrl(''); PR.render(); };
   PR.acts.startDemo = async () => { A.setUrl('demo'); PR.demo.setRole('ppr'); A.setSession('demo-session'); try { await A.boot(true); PR.go('#/dasbor'); } catch (e) { PR.toast(e.message, 'err'); } };
-  PR.acts.qrHelp = () => PR.modal({ title: 'Masuk dengan QR + PIN', body: `<ol style="margin:0;padding-left:18px;line-height:1.7"><li>Minta <b>kode QR pribadi</b> ke PPR (biasanya ditempel di ID card atau kartu TLD).</li><li>Pindai QR dengan kamera HP — tautan AlaraGo akan terbuka.</li><li>Pertama kali: buat PIN 6 digit. Berikutnya cukup PIN (atau langsung masuk jika perangkat diingat).</li></ol><p class="small muted">Lupa PIN atau QR hilang? Minta PPR membuat QR baru — QR lama otomatis tidak berlaku.</p>` });
+  PR.acts.qrHelp = () => PR.modal({ title: 'Masuk dengan QR + PIN', body: `<ol style="margin:0;padding-left:18px;line-height:1.8"><li>Minta <b>QR akses pribadi</b> ke PPR (pekerja: biasanya ditempel di ID card atau kartu TLD; peninjau: dikirim lewat pesan).</li><li>Pindai QR dengan kamera HP — AlaraGo terbuka.</li><li>Buat PIN 6 digit. Berikutnya cukup buka AlaraGo dan masukkan PIN.</li></ol><p class="small muted">Data Anda dikunci di HP Anda sendiri; PIN tidak pernah dikirim ke mana pun.</p>` });
 
-  // ================= QR + PIN PEKERJA =================
+  // ================= QR (aktivasi pekerja / peninjau) =================
   let pin = '', pin1 = '';
   PR.page('qr', {
-    full: true, title: 'Masuk pekerja',
-    render: () => `<div class="center-wrap"><div class="auth-card" style="max-width:420px"><div class="hazard"></div><div class="in" id="qrbox"><div class="sk"></div><div class="sk"></div></div></div></div>`,
+    full: true, title: 'Aktifkan akses',
+    render: () => `<div class="center-wrap"><div class="auth-card" style="max-width:420px"><div class="in" id="qrbox"><div class="sk"></div><div class="sk"></div></div></div></div>`,
     mount: async (root, r) => {
-      const box = PR.$('#qrbox', root), url = A.urlFromId(r.q.b);
-      if (!url || !r.q.t) { box.innerHTML = `<div class="ban ban-crit">${PR.ic('triangle-alert')}<div class="grow">Tautan QR tidak lengkap. Pindai ulang QR dari PPR.</div></div>`; return; }
-      if (A.url() !== url) { A.setUrl(url); }
+      const box = PR.$('#qrbox', root), q = Object.assign({}, r.q);
+      const head = sub => `<div class="auth-brand" style="margin-bottom:16px">${PR.logo()}<div><b>AlaraGo</b><span>${sub}</span></div></div>`;
+      const gagal = m => { box.innerHTML = head('Protect. Record. Ready.') + `<div class="ban ban-crit">${PR.ic('triangle-alert')}<div class="grow">${PR.esc(m)}</div></div><a class="btn btn-b mt" href="#/masuk">Ke halaman masuk</a>`; };
+      if (q.demo) { A.setUrl('demo'); A.setSession('demo-session'); if (q.rv) PR.demo.setRole('peninjau'); else { PR.demo.setRole('pekerja'); if (q.w) PR.LS.set('pr_demo_worker', q.w); } await A.boot(true); return PR.go(q.rv ? '#/persetujuan' : '#/saya'); }
+      if (!q.p || !q.k) return gagal(q.t ? 'QR ini dibuat oleh versi lama AlaraGo. Minta QR baru ke PPR.' : 'Tautan QR tidak lengkap. Pindai ulang QR dari PPR.');
+      history.replaceState(null, '', location.pathname + '#/qr');   // kunci tidak tertinggal di riwayat browser
       let info;
-      try { info = await A.call('qrInfo', { token: r.q.t }); }
-      catch (e) { box.innerHTML = `<div class="auth-brand">${PR.logo()}<div><b>AlaraGo</b><span>Protect. Record. Ready.</span></div></div><div class="ban ban-crit">${PR.ic('triangle-alert')}<div class="grow">${PR.esc(e.message)}</div></div>`; return; }
+      try { info = await PR.akses.periksa(q); } catch (e) { return gagal(e.message); }
       pin = ''; pin1 = '';
-      const step = info.needPin ? 'buat' : 'masuk';
+      const isW = info.jenis === 'pekerja';
       const draw = (stage, msg) => {
-        const title = stage === 'buat' ? 'Buat PIN 6 digit' : stage === 'ulang' ? 'Ulangi PIN' : 'Masukkan PIN';
-        box.innerHTML = `<div class="auth-brand" style="margin-bottom:16px">${PR.logo()}<div><b>AlaraGo</b><span>Portal pekerja</span></div></div>
-          <div class="eyebrow">${PR.esc(info.rs)}</div><h2 style="margin-top:4px">Halo, ${PR.esc(info.nama)}</h2><p class="muted small" style="margin:4px 0 0">${PR.esc(info.profesi || '')} · ${title}</p>
-          <div class="pin-boxes" aria-live="polite">${[0, 1, 2, 3, 4, 5].map(i => `<i class="${i === pin.length ? 'on' : ''}">${i < pin.length ? '•' : ''}</i>`).join('')}</div>
-          ${msg ? `<div class="small" style="color:var(--crit);margin:-8px 0 10px">${PR.esc(msg)}</div>` : ''}
-          <div class="keypad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(k => `<button data-k="${k}">${k}</button>`).join('')}<button class="sub" data-k="c">Hapus</button><button data-k="0">0</button><button class="sub" data-k="b" aria-label="Hapus satu">${PR.ic('arrow-left')}</button></div>
-          ${stage !== 'masuk' ? `<label class="chk mt"><input type="checkbox" id="consent"> Saya menyetujui pemakaian data dosis saya untuk pemantauan proteksi radiasi (UU PDP No. 27/2022).</label>` : ''}
-          <label class="chk mt8"><input type="checkbox" id="remember" checked> Ingat perangkat ini (90 hari)</label>
-          <p class="small muted mt8">Lupa PIN? Hubungi PPR Anda untuk QR baru.</p>`;
+        box.innerHTML = head(isW ? 'Portal pekerja' : 'Akses peninjau') + `<h2>Halo, ${PR.esc(info.nama || '')}</h2><p class="muted small" style="margin:4px 0 0">${PR.esc(info.profesi || '')}${info.profesi ? ' · ' : ''}${stage === 'buat' ? 'Buat PIN 6 digit untuk perangkat ini' : 'Ulangi PIN'}</p>` + pad(stage, pin.length, msg) +
+          (isW ? `<label class="chk mt"><input type="checkbox" id="consent"> Saya menyetujui pemakaian data dosis saya untuk pemantauan proteksi radiasi (UU PDP No. 27/2022).</label>` : '') +
+          `<p class="small muted mt8">PIN mengunci data di perangkat ini. Lupa PIN? Minta QR baru ke PPR.</p>`;
         box.querySelectorAll('[data-k]').forEach(b => b.onclick = () => press(b.dataset.k, stage));
       };
       const press = async (k, stage) => {
-        const consent = PR.$('#consent') ? PR.$('#consent').checked : true, remember = PR.$('#remember').checked;
+        const consent = PR.$('#consent') ? PR.$('#consent').checked : true;
         if (k === 'c') pin = ''; else if (k === 'b') pin = pin.slice(0, -1); else if (pin.length < 6) pin += k;
-        draw(stage);
-        if (PR.$('#consent')) PR.$('#consent').checked = consent; PR.$('#remember').checked = remember;
+        draw(stage); if (PR.$('#consent')) PR.$('#consent').checked = consent;
         if (pin.length < 6) return;
         if (stage === 'buat') { pin1 = pin; pin = ''; draw('ulang'); if (PR.$('#consent')) PR.$('#consent').checked = consent; return; }
-        if (stage === 'ulang' && pin !== pin1) { pin = ''; pin1 = ''; draw('buat', 'PIN tidak sama. Ulangi.'); return; }
-        if (stage === 'ulang' && !consent) { pin = ''; draw('ulang', 'Centang persetujuan pemakaian data terlebih dahulu.'); return; }
-        try { const d = await A.call('loginPin', { token: r.q.t, pin, consent, remember }); await afterLogin(d); }
-        catch (e) { pin = ''; draw(stage === 'ulang' ? 'buat' : stage, e.message); }
+        if (pin !== pin1) { pin = ''; pin1 = ''; return draw('buat', 'PIN tidak sama. Ulangi.'); }
+        if (!consent) { pin = ''; draw('ulang', 'Centang persetujuan pemakaian data terlebih dahulu.'); return; }
+        try { await PR.akses.aktifkan(q, pin, info.jenis); A.setUrl('akses'); await masukSelesai(); }
+        catch (e) { pin = ''; pin1 = ''; draw('buat', e.message); }
       };
-      draw(step);
+      draw('buat');
     }
   });
+
+  // ================= PIN (membuka akses tersimpan) =================
+  PR.page('pin', {
+    full: true, title: 'Masukkan PIN',
+    render: () => `<div class="center-wrap"><div class="auth-card" style="max-width:420px"><div class="in" id="pinbox"></div></div></div>`,
+    mount: root => {
+      const box = PR.$('#pinbox', root), s = PR.akses.tersimpan();
+      if (!s) return PR.go('#/masuk');
+      pin = '';
+      const draw = msg => {
+        box.innerHTML = `<div class="auth-brand" style="margin-bottom:16px">${PR.logo()}<div><b>AlaraGo</b><span>${s.jenis === 'peninjau' ? 'Akses peninjau' : 'Portal pekerja'}</span></div></div><h2>Masukkan PIN</h2>` + pad('masuk', pin.length, msg) +
+          `<p class="small muted mt">Bukan perangkat Anda? <button class="link small" data-act="hapusAkses">Hapus akses dari perangkat ini</button></p>`;
+        box.querySelectorAll('[data-k]').forEach(b => b.onclick = () => press(b.dataset.k));
+      };
+      const press = async k => {
+        if (k === 'c') pin = ''; else if (k === 'b') pin = pin.slice(0, -1); else if (pin.length < 6) pin += k;
+        draw(); if (pin.length < 6) return;
+        try { await PR.akses.buka(pin); A.setUrl('akses'); await masukSelesai(); }
+        catch (e) { pin = ''; if (e.code === 'WIPED') { PR.toast(e.message, 'err'); return PR.go('#/masuk'); } draw(e.message); }
+      };
+      draw();
+    }
+  });
+  PR.acts.hapusAkses = async () => { if (!(await PR.confirm('Hapus akses AlaraGo dari perangkat ini? Anda perlu memindai QR lagi untuk masuk.', 'Hapus'))) return; PR.akses.hapus(); A.setUrl(''); PR.go('#/masuk'); };
 
   // ================= WIZARD =================
   const W = { step: 1, alat: null, pekerja: null };

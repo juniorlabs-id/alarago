@@ -14,7 +14,7 @@
 
   function start() {
     // 1) tampil langsung dari cache lokal (0 ms) — tidak menunggu server
-    const pub = ['masuk', 'qr', 'tamu', 'pintu', 'hubungkan'].includes(PR.parse().name);
+    const pub = PR.PUBLIC.includes(PR.parse().name);
     if (!pub && A.url() && A.session()) A.loadCache();
     PR.render();
     // 2) segarkan diam-diam; server membalas notModified bila tidak ada perubahan

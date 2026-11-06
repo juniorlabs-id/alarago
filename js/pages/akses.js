@@ -48,21 +48,28 @@
       if (G.err) return `<div class="center-wrap"><div class="auth-card"><div class="hazard"></div><div class="in"><div class="auth-brand">${PR.logo()}<div><b>AlaraGo</b><span>Paket siap inspeksi</span></div></div><div class="ban ban-crit">${PR.ic('lock')}<div class="grow">${PR.esc(G.err)}</div></div></div></div></div>`;
       if (!G.data) return `<div class="center-wrap"><div class="sk" style="width:240px"></div><div class="sk" style="width:180px"></div></div>`;
       const d = G.data, rs = L.rs(), R = L.readiness(PR.today());
-      if (r.q.print) return `<div class="page" style="max-width:1000px"><div class="no-print row mb"><a class="btn" href="#/tamu?b=${encodeURIComponent(r.q.b)}&g=${encodeURIComponent(r.q.g)}">${PR.ic('arrow-left')}Kembali</a><button class="btn btn-y" data-act="print">${PR.ic('printer')}Cetak / simpan PDF</button></div>${PR.paketHTML(R)}</div>`;
-      return `<header class="top" style="position:sticky;flex-wrap:wrap;height:auto;min-height:56px;padding:8px 24px">${PR.logo()}<b style="font:700 16px var(--fh)">Paket siap inspeksi · ${PR.esc(rs.nama || '')}</b><span class="tag">[Hanya baca · berlaku s.d. ${PR.esc(PR.d(d.berlaku_sd).toUpperCase())}]</span><span style="flex:1"></span><span class="small mono">${PR.ic('clock', 'ic-s')} Sisa ${Math.max(0, Math.ceil((new Date(d.berlaku_sd) - new Date()) / 864e5))} hari</span>
-          <button class="btn btn-s" data-act="zipPack">${PR.ic('download')}Unduh ZIP</button><a class="btn btn-s btn-y" href="#/tamu?b=${encodeURIComponent(r.q.b)}&g=${encodeURIComponent(r.q.g)}&print=1">${PR.ic('file-check')}Unduh paket PDF</a></header>
+      if (r.q.print) return `<div class="page" style="max-width:1000px"><div class="no-print row mb"><a class="btn" href="#/tamu?${G.qs}">${PR.ic('arrow-left')}Kembali</a><button class="btn btn-y" data-act="print">${PR.ic('printer')}Cetak / simpan PDF</button></div>${PR.paketHTML(R)}</div>`;
+      return `<header class="top" style="position:sticky;flex-wrap:wrap;height:auto;min-height:56px;padding:8px 24px">${PR.logo()}<b style="font:700 16px var(--fh)">Paket siap inspeksi · ${PR.esc(rs.nama || '')}</b><span class="tag">Hanya baca · berlaku s.d. ${PR.esc(PR.d(d.berlaku_sd))}</span><span style="flex:1"></span><span class="small mono">${PR.ic('clock', 'ic-s')} Sisa ${Math.max(0, Math.ceil((new Date(d.berlaku_sd) - new Date()) / 864e5))} hari</span>
+          <button class="btn btn-s" data-act="zipPack">${PR.ic('download')}Unduh ZIP</button><a class="btn btn-s btn-y" href="#/tamu?${G.qs}&print=1">${PR.ic('file-check')}Unduh paket PDF</a></header>
         <div class="page"><div class="panel mb"><div class="panel-b row" style="gap:8px 28px"><span class="small">RS: <b>${PR.esc(rs.nama || '')}</b></span><span class="small">PPR: <b>${PR.esc(d.ppr || PR.set.ppr_nama || '')}</b> · Izin Bekerja ${PR.esc(PR.set.ppr_izin_no || '—')}</span><span class="small">Tanggal paket: <b>${PR.d(PR.today())}</b></span><span class="small">Ringkasan kelengkapan <b class="mono">${Math.round(R.score * 100)}%</b> <span class="muted">(perkiraan internal)</span></span></div></div>
-          <div class="grid g-3-9"><div class="panel" style="align-self:start"><div class="panel-h"><h3>8 bagian LHI</h3></div>${R.sections.map(x => `<a href="#/tamu?b=${encodeURIComponent(r.q.b)}&g=${encodeURIComponent(r.q.g)}&s=${x.no}" class="list-row" style="text-decoration:none;padding:10px 14px;${x.no === sec ? 'background:var(--y-t);box-shadow:inset 3px 0 var(--y)' : ''}"><span class="mono">${String(x.no).padStart(2, '0')}</span><div class="grow"><b>${x.title}</b></div><span class="mono small">${Math.round(x.pct * 100)}%</span></a>`).join('')}</div>
+          <div class="grid g-3-9"><div class="panel" style="align-self:start"><div class="panel-h"><h3>8 bagian LHI</h3></div>${R.sections.map(x => `<a href="#/tamu?${G.qs}&s=${x.no}" class="list-row" style="text-decoration:none;padding:10px 14px;${x.no === sec ? 'background:var(--y-t);box-shadow:inset 3px 0 var(--y)' : ''}"><span class="mono">${String(x.no).padStart(2, '0')}</span><div class="grow"><b>${x.title}</b></div><span class="mono small">${Math.round(x.pct * 100)}%</span></a>`).join('')}</div>
             <div class="panel"><div class="panel-h"><div><span class="tag t-ink">Bagian ${sec}</span><h2 style="margin-top:8px">${PR.pkg.TITLES[sec - 1]}</h2></div><span class="pct">${Math.round(R.sections[sec - 1].pct * 100)}%</span></div><div class="panel-b">${PR.pkg.section(sec)}
-              <div class="spread mt">${sec > 1 ? `<a class="btn" href="#/tamu?b=${encodeURIComponent(r.q.b)}&g=${encodeURIComponent(r.q.g)}&s=${sec - 1}">${PR.ic('arrow-left')}Bagian sebelumnya</a>` : '<span></span>'}${sec < 8 ? `<a class="btn btn-y" href="#/tamu?b=${encodeURIComponent(r.q.b)}&g=${encodeURIComponent(r.q.g)}&s=${sec + 1}">Bagian berikutnya ${PR.ic('arrow-right')}</a>` : ''}</div></div></div></div>
+              <div class="spread mt">${sec > 1 ? `<a class="btn" href="#/tamu?${G.qs}&s=${sec - 1}">${PR.ic('arrow-left')}Bagian sebelumnya</a>` : '<span></span>'}${sec < 8 ? `<a class="btn btn-y" href="#/tamu?${G.qs}&s=${sec + 1}">Bagian berikutnya ${PR.ic('arrow-right')}</a>` : ''}</div></div></div></div>
           <p class="small muted mt" style="text-align:center">Tautan hanya baca · dibuat oleh PPR · berakhir ${PR.dt(d.berlaku_sd)}. Dokumen ditampilkan sebagai berkas asli yang diunggah fasilitas.</p></div>`;
     },
     mount: async (root, r) => {
       if (G.data || G.err) return;
-      const url = A.urlFromId(r.q.b);
-      if (!url || !r.q.g) { G.err = 'Tautan tidak lengkap.'; return PR.render(); }
-      try { const j = await A.raw(url, 'guest', { g: r.q.g }); if (!j.success) throw new Error(j.message); G.data = j.data; PR.db = j.data.tables; PR.set = j.data.settings; PR._today = j.data.today; PR.extra = {}; U.guest = { g: r.q.g, url }; }
-      catch (e) { G.err = e.message; }
+      try {
+        if (r.q.demo) { const j = await PR.demo.handle('guest', {}); G.data = j.data; U.guest = { g: 'demo', url: 'demo' }; G.qs = 'demo=1'; }
+        else {
+          if (!r.q.p || !r.q.k) throw new Error(r.q.g ? 'Tautan ini dibuat oleh versi lama AlaraGo. Minta tautan baru ke PPR.' : 'Tautan tidak lengkap.');
+          const pkg = await PR.akses.tamu(r.q);
+          if (pkg.berlaku_sd && new Date(pkg.berlaku_sd) < new Date()) throw new Error('Tautan ini sudah berakhir. Minta tautan baru ke PPR.');
+          G.data = { tables: pkg.tables, settings: pkg.settings || {}, berlaku_sd: pkg.berlaku_sd, today: PR.today(), ppr: pkg.ppr || (pkg.settings || {}).ppr_nama || '' };
+          U.guest = { peta: pkg.berkas || {}, cr: { r: r.q.r } }; G.qs = `r=${encodeURIComponent(r.q.r || '')}&p=${encodeURIComponent(r.q.p)}&k=${encodeURIComponent(r.q.k)}`;
+        }
+        PR.db = G.data.tables; PR.set = G.data.settings; PR._today = G.data.today; PR.extra = {};
+      } catch (e) { G.err = e.code === 'BAD_LINK' || /tidak ditemukan|kedaluwarsa|expired/i.test(e.message) ? 'Tautan ini tidak berlaku lagi (berakhir atau dicabut PPR).' : e.message; }
       PR.render();
     }
   });
@@ -71,7 +78,7 @@
   const D = {};
   PR.page('pintu', {
     full: true, title: 'Status ruangan',
-    render: r => { const key = r.q.b + '|' + r.q.r, d = D[key];
+    render: r => { const key = (r.q.r || r.q.demo || '') + '|' + r.q.d, d = D[key];
       const sty = { 'aman': ['var(--ok)', 'var(--ok-b)', 'circle-check', 'Aman'], 'perlu perhatian': ['var(--warn)', 'var(--warn-b)', 'circle-alert', 'Perlu perhatian'], 'melebihi batas': ['#fff', 'var(--crit)', 'triangle-alert', 'Melebihi batas'], 'survei ulang diperlukan': ['var(--warn)', 'var(--warn-b)', 'radar', 'Survei ulang diperlukan'], 'belum disurvei': ['var(--muted)', 'var(--sub)', 'info', 'Belum disurvei'] };
       if (!d) return `<div class="door"><div class="sk"></div><div class="sk t"></div></div>`;
       if (d.err) return `<div class="door"><div class="row">${PR.logo()}<b style="font:700 18px var(--fh)">AlaraGo</b></div><div class="ban ban-crit mt">${PR.ic('triangle-alert')}<div class="grow">${PR.esc(d.err)}</div></div></div>`;
@@ -82,9 +89,12 @@
         <dl class="kv" style="font-size:15px"><dt>Survei terakhir</dt><dd>${d.tanggal ? PR.d(d.tanggal) : '—'}</dd><dt>Klasifikasi area</dt><dd>${PR.esc(d.klasifikasi ? 'Daerah ' + d.klasifikasi : '—')}</dd></dl>
         <p class="small muted mt">Halaman ini tidak memuat data pribadi. Status berdasarkan survei paparan terakhir terhadap batas laju dosis yang ditetapkan rumah sakit. Informasi lebih lanjut: hubungi petugas proteksi radiasi.</p></div>`; },
     mount: async (root, r) => {
-      const key = r.q.b + '|' + r.q.r; if (D[key]) return;
-      try { let j; if (r.q.b === 'demo') j = await PR.demo.handle('door', { r: r.q.r }); else j = await (await fetch(A.urlFromId(r.q.b) + '?action=door&r=' + encodeURIComponent(r.q.r || ''))).json();
-        D[key] = j.success ? j.data : { err: j.message }; } catch (e) { D[key] = { err: 'Tidak dapat memuat status. Periksa koneksi.' }; }
+      const key = (r.q.r || r.q.demo || '') + '|' + r.q.d; if (D[key]) return;
+      try {
+        if (r.q.demo) { const j = await PR.demo.handle('door', { r: r.q.d }); D[key] = j.success ? j.data : { err: j.message }; }
+        else if (!r.q.d) D[key] = { err: r.q.b ? 'QR pintu ini dibuat oleh versi lama AlaraGo. Minta PPR mencetak ulang QR pintu.' : 'QR tidak lengkap.' };
+        else D[key] = await PR.akses.pintuStatus(r.q);
+      } catch (e) { D[key] = { err: e.network || e instanceof TypeError ? 'Tidak dapat memuat status. Periksa koneksi.' : e.message }; }
       PR.render();
     }
   });

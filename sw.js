@@ -1,16 +1,16 @@
 /* AlaraGo — service worker: app shell offline + cache font/CDN. Data API (script.google.com) tidak pernah di-cache di sini. */
-const VERSION = 'alarago-v1.1.0';
+const VERSION = 'alarago-v2.0.0';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './css/style.css',
-  './js/config.js', './js/icons.js', './js/util.js', './js/logic.js', './js/api.js', './js/demo.js', './js/ui.js',
+  './js/config.js', './js/icons.js', './js/util.js', './js/logic.js', './js/cloud.js', './js/drive.js', './js/penerima.js', './js/api.js', './js/demo.js', './js/ui.js',
   './js/pages/auth.js', './js/pages/dasbor.js', './js/pages/kalender.js', './js/pages/inventaris.js', './js/pages/dosis.js',
   './js/pages/dc.js', './js/pages/survei.js', './js/pages/arsip.js', './js/pages/inspeksi.js', './js/pages/pengaturan.js',
-  './js/pages/portal.js', './js/pages/akses.js', './js/pages/cetak.js', './js/app.js', './js/vendor/qrcode.min.js',
+  './js/pages/portal.js', './js/pages/akses.js', './js/pages/cetak.js', './js/app.js', './js/vendor/qrcode.min.js', './js/kalender-mini.js',
   './icons/favicon.svg', './icons/favicon-32.png', './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png', './icons/apple-touch-icon.png'
 ];
 const EXT_CACHE = 'alarago-ext-v1';
 const EXT = /^https:\/\/(fonts\.googleapis\.com|fonts\.gstatic\.com|cdnjs\.cloudflare\.com)\//;
-const NEVER = /^https:\/\/(script\.google\.com|script\.googleusercontent\.com|accounts\.google\.com|oauth2\.googleapis\.com|www\.googleapis\.com)\//;
+const NEVER = /^https:\/\/(script\.google\.com|script\.googleusercontent\.com|accounts\.google\.com|oauth2\.googleapis\.com|www\.googleapis\.com|sheets\.googleapis\.com|content\.googleapis\.com)\//;
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));

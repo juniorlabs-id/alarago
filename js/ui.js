@@ -85,12 +85,14 @@
   window.addEventListener('offline', () => U.syncBar(PR.api.pending(), true));
 
   // ---------- render ----------
-  const PUBLIC = ['masuk', 'qr', 'tamu', 'pintu', 'hubungkan'];
+  const PUBLIC = ['masuk', 'qr', 'pin', 'tamu', 'pintu'];
+  PR.PUBLIC = PUBLIC;
   let mountedRole = null;
   PR.render = () => {
     const r = PR.parse(); let name = r.name;
     const root = PR.$('#root');
     if (!PUBLIC.includes(name)) {
+      if (PR.api.mode() === 'akses' && !PR.api.session()) return PR.go(PR.akses.tersimpan() ? '#/pin' : '#/masuk');
       if (!PR.api.url() || !PR.api.session()) { if (name !== 'masuk') return PR.go('#/masuk'); }
       if (!PR.me) { root.innerHTML = '<div class="center-wrap"><div class="sk" style="width:200px"></div></div>'; return; }
       const role = PR.me.role;
@@ -122,7 +124,8 @@
     const a = e.target.closest('[data-act]');
     if (a && PR.acts[a.dataset.act]) { if (a.tagName === 'A') e.preventDefault(); PR.acts[a.dataset.act](a, e); }
   });
-  PR.acts.logout = async (el, e) => { e && e.preventDefault(); if (PR.api.pending() && !(await PR.confirm('Masih ada perubahan yang belum terkirim. Keluar tetap?', 'Keluar'))) return; PR.api.logout(); PR.me = null; PR.db = null; document.querySelectorAll('.modal-bg').forEach(m => m.remove()); PR.go('#/masuk'); };
+  document.addEventListener('change', e => { const a = e.target.closest('[data-change]'); if (a && PR.acts[a.dataset.change]) PR.acts[a.dataset.change](a, e); });
+  PR.acts.logout = async (el, e) => { e && e.preventDefault(); if (PR.api.pending() && !(await PR.confirm('Masih ada perubahan yang belum terkirim. Keluar tetap?', 'Keluar'))) return; const aks = PR.api.mode() === 'akses'; PR.api.logout(); PR.me = null; PR.db = null; document.querySelectorAll('.modal-bg').forEach(m => m.remove()); PR.go(aks && PR.akses.tersimpan() ? '#/pin' : '#/masuk'); };
   PR.acts.install = async (el, e) => { e && e.preventDefault(); if (!PR.installEvt) return PR.toast('Gunakan menu browser › "Tambahkan ke layar utama" / "Instal aplikasi".'); PR.installEvt.prompt(); await PR.installEvt.userChoice; PR.installEvt = null; PR.$$('[data-act=install]').forEach(x => x.hidden = true); };
   PR.acts.demoRole = async el => { PR.demo.setRole(el.dataset.r); await PR.api.boot(true); mountedRole = null; PR.go(el.dataset.r === 'pekerja' ? '#/saya' : el.dataset.r === 'peninjau' ? '#/persetujuan' : '#/dasbor'); PR.render(); };
   PR.acts.demoReset = async () => { if (!(await PR.confirm('Kembalikan semua data contoh ke awal?', 'Reset'))) return; PR.demo.reset(); PR.demo.setRole('ppr'); await PR.api.boot(true); mountedRole = null; PR.go('#/dasbor'); PR.render(); };

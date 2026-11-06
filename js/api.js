@@ -1,30 +1,33 @@
 /* AlaraGo — lapisan API: fetch ke GAS, cache lokal (instan), antrean tulis (optimistic + offline) */
 (function (PR) {
   'use strict';
-  const LS = {
-    get: (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
-    set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } },
-    del: k => { try { localStorage.removeItem(k); } catch (e) { } }
-  };
-  PR.LS = LS;
+  const LS = PR.LS;   // didefinisikan di cloud.js
   const cfg = () => window.PR_CONFIG || {};
   const A = PR.api = {};
 
   // ---------- alamat backend ----------
   A.depId = url => { const m = String(url || '').match(/\/s\/([^/]+)\/exec/); return m ? m[1] : (/^[\w-]{20,}$/.test(url || '') ? url : ''); };
   A.urlFromId = id => id === 'demo' ? 'demo' : id ? `https://script.google.com/macros/s/${id}/exec` : '';
-  A.url = () => LS.get('pr_backend', '') || cfg().DEFAULT_BACKEND_URL || '';
+  A.url = () => LS.get('pr_backend', '') || '';
   A.setUrl = u => { LS.set('pr_backend', u); };
   A.isDemo = () => A.url() === 'demo';
-  A.bId = () => A.isDemo() ? 'demo' : A.depId(A.url());
-  const ns = () => 'pr_' + (A.bId() || 'x').slice(-10) + '_';
-  A.session = () => LS.get(ns() + 'sess', null);
+  A.mode = () => { const u = A.url(); return u === 'demo' || u === 'drive' || u === 'akses' ? u : (u ? 'gas' : ''); };
+  A.bId = () => A.isDemo() ? 'demo' : A.mode() === 'drive' || A.mode() === 'akses' ? (PR.R ? PR.R.dep() : '') : A.depId(A.url());
+  const ns = () => A.mode() === 'drive' ? 'pr_drive_' + String(LS.get('ag_email', '')).replace(/[^a-z0-9]/gi, '').slice(0, 24) + '_' : A.mode() === 'akses' ? 'pr_akses_' : 'pr_' + (A.bId() || 'x').slice(-10) + '_';
+  const store = () => A.mode() === 'akses' ? PR.SS : LS;   // data penerima tidak disimpan polos di perangkat
+  A.session = () => A.mode() === 'akses' ? (PR.akses && PR.akses.terbuka() ? 'akses' : null) : LS.get(ns() + 'sess', null);
   A.setSession = s => LS.set(ns() + 'sess', s);
-  A.logout = () => { LS.del(ns() + 'sess'); LS.del(ns() + 'cache'); };
+  A.logout = () => {
+    const m = A.mode(); LS.del(ns() + 'sess'); store().del(ns() + 'cache');
+    if (m === 'drive' && PR.drive) PR.drive.keluar();
+    if (m === 'akses' && PR.akses) PR.akses.kunci();
+  };
 
   // ---------- panggilan dasar ----------
   A.raw = async (url, action, body) => {
     if (url === 'demo') return PR.demo.handle(action, body || {});
+    if (url === 'drive') return PR.drive.handle(action, body || {});
+    if (url === 'akses') return PR.akses.handle(action, body || {});
     const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 45000);
     try {
       const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action }, body || {})), signal: ctl.signal, redirect: 'follow' });
@@ -38,7 +41,8 @@
     const j = await A.raw(url || A.url(), action, Object.assign({ s: A.session() }, body || {}));
     if (!j || !j.success) {
       const e = new Error((j && j.message) || 'Gagal'); e.code = j && j.code;
-      if (e.code === 'NO_SESSION') { A.logout(); setTimeout(() => PR.go('#/masuk'), 50); }
+      if (e.code === 'NO_SESSION') { if (A.mode() === 'akses') setTimeout(() => PR.go('#/pin'), 50); else { A.logout(); setTimeout(() => PR.go('#/masuk'), 50); } }
+      if (e.code === 'GOOGLE_AUTH') A.mintaLogin();
       throw e;
     }
     return j.data;
@@ -50,15 +54,17 @@
     PR.extra = { tautan: d.tautan || [], log: d.log || [], kredensial: d.kredensial || [] };
     applyOutbox();
   };
-  A.loadCache = () => { const c = LS.get(ns() + 'cache', null); if (c && c.tables) { A.apply(c); A.ver = c.ver; return true; } return false; };
+  A.mintaLogin = () => { if (A._minta) return; A._minta = true; PR.toast('Sesi Google perlu diperbarui.', 'warn', { label: 'Lanjutkan', fn: () => { A._minta = false; PR.G.minta('').then(() => { A.flush(); return A.boot(true); }).then(() => PR.rerender()).catch(e => PR.toast(e.message, 'err')); } }); setTimeout(() => A._minta = false, 15000); };
+  A.loadCache = () => { const c = store().get(ns() + 'cache', null); if (c && c.tables) { A.apply(c); A.ver = c.ver; return true; } return false; };
   A.boot = async force => {
-    const c = force ? null : LS.get(ns() + 'cache', null);
+    const c = force ? null : store().get(ns() + 'cache', null);
     const d = await A.call('bootstrap', { ver: c && c.ver });
-    if (d.notModified && c) { if (d.license) { c.license = d.license; PR.lic = d.license; LS.set(ns() + 'cache', c); } A.lastBoot = Date.now(); return false; }
-    LS.set(ns() + 'cache', d); A.ver = d.ver; A.apply(d); A.lastBoot = Date.now();
+    if (d.notModified && c) { if (d.license) { c.license = d.license; PR.lic = d.license; store().set(ns() + 'cache', c); } A.lastBoot = Date.now(); return false; }
+    store().set(ns() + 'cache', d); A.ver = d.ver; A.apply(d); A.lastBoot = Date.now();
     return true;
   };
-  const saveCache = () => { const c = LS.get(ns() + 'cache', null); if (!c) return; c.tables = PR.db; c.settings = PR.set; c.ver = A.ver; LS.set(ns() + 'cache', c); };
+  A.clearCache = () => store().del(ns() + 'cache');
+  const saveCache = A.saveCache = () => { const c = store().get(ns() + 'cache', null); if (!c) return; c.tables = PR.db; c.settings = PR.set; c.ver = A.ver; store().set(ns() + 'cache', c); };
 
   // ---------- antrean tulis ----------
   const outbox = () => LS.get(ns() + 'outbox', []);
@@ -90,7 +96,7 @@
       const rest = outbox().slice(ops.length); setOutbox(rest);
       A.ver = rest.length ? A.ver : d.ver; saveCache();
     } catch (e) {
-      if (e.network) { PR.ui && PR.ui.syncBar && PR.ui.syncBar(outbox().length, true); }
+      if (e.network || e.code === 'GOOGLE_AUTH') { PR.ui && PR.ui.syncBar && PR.ui.syncBar(outbox().length, true); }
       else { setOutbox(outbox().slice(ops.length)); PR.toast('Gagal menyimpan: ' + e.message, 'err'); A.boot(true).then(() => PR.render()).catch(() => { }); }
     } finally { flushing = false; }
   };
@@ -100,14 +106,16 @@
   const fileCache = {};
   A.upload = async (file, kind) => {
     if (file.size > 15 * 1024 * 1024) throw new Error('Berkas terlalu besar (maks 15 MB)');
-    const data = await PR.fileToB64(file);
-    const d = await A.call('upload', { name: file.name, mime: file.type || 'application/octet-stream', data, kind: kind || '' });
+    const data = A.mode() === 'drive' ? '' : await PR.fileToB64(file);
+    const d = await A.call('upload', { name: file.name, mime: file.type || 'application/octet-stream', data: A.mode() === 'drive' ? '' : data, file: A.mode() === 'drive' ? file : undefined, kind: kind || '' });
     fileCache[d.id] = { url: URL.createObjectURL(file), nama: file.name, mime: file.type };
     return d;
   };
   A.file = async (id, guest) => {
     if (fileCache[id]) return fileCache[id];
+    if (guest && guest.peta) { const f = await PR.akses.berkasBlob(id, guest.cr, guest.peta); return (fileCache[id] = { url: URL.createObjectURL(f.blob), nama: f.nama, mime: f.mime, blob: f.blob }); }
     const d = guest ? await A.call('guestFile', { id, g: guest.g }, guest.url) : await A.call('getFile', { id });
+    if (d.blob) return (fileCache[id] = { url: URL.createObjectURL(d.blob), nama: d.nama, mime: d.mime, blob: d.blob });
     const bin = atob(d.data), arr = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
     const url = URL.createObjectURL(new Blob([arr], { type: d.mime }));
     return (fileCache[id] = { url, nama: d.nama, mime: d.mime, blob: new Blob([arr], { type: d.mime }) });

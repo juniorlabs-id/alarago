@@ -140,7 +140,7 @@
       case 'getFile': case 'guestFile': {
         if (files[b.id]) return ok(files[b.id]);
         if (b.id === 'DEMO_DENAH') return ok({ nama: 'denah.svg', mime: 'image/svg+xml', data: btoa(planSVG()) });
-        const html = `<!doctype html><meta charset=utf-8><title>Berkas contoh</title><body style="font-family:sans-serif;padding:40px;background:#F2F3F5"><div style="max-width:640px;margin:auto;background:#fff;border:1px solid #9AA0A8;padding:32px"><div style="height:8px;background:repeating-linear-gradient(-45deg,#FFC21A 0 10px,#121212 10px 20px);margin:-32px -32px 24px"></div><h2>Berkas contoh (mode demo)</h2><p>Di aplikasi sebenarnya, berkas PDF/foto asli yang Anda unggah akan tampil di sini dari Google Drive Anda.</p></div>`;
+        const html = `<!doctype html><meta charset=utf-8><title>Berkas contoh</title><body style="font-family:sans-serif;padding:40px;background:#F5F5F2"><div style="max-width:640px;margin:auto;background:#fff;border-radius:16px;padding:32px;border-top:8px solid #F0B33E"><h2>Berkas contoh (mode demo)</h2><p>Di aplikasi sebenarnya, berkas PDF/foto asli yang Anda unggah akan tampil di sini dari Google Drive Anda.</p></div>`;
         return ok({ nama: 'contoh.html', mime: 'text/html', data: btoa(unescape(encodeURIComponent(html))) });
       }
       case 'confirmDose': { const d = db.Dosis.find(x => x.id === b.id); if (d) d.dibaca_pada = new Date().toISOString(); persist(db); return ok({ dibaca_pada: d && d.dibaca_pada }); }
@@ -148,11 +148,14 @@
       case 'readSop': { const doc = db.Dokumen.find(x => x.id === b.id); const row = { id: PR.uid('BS'), dokumen_id: b.id, revisi: doc.revisi, pekerja_id: worker(), waktu: new Date().toISOString() }; db.Baca_SOP.push(row); persist(db); return ok(row); }
       case 'changePin': return /^\d{6}$/.test(b.pin || '') ? ok({}) : { success: false, message: 'PIN baru harus 6 digit.' };
       case 'approveDC': { db.Pembatas_Dosis.filter(d => (b.ids || []).indexOf(d.id) >= 0).forEach(d => { d.status = b.decision === 'setuju' ? 'disetujui' : 'revisi'; d.disetujui_oleh = me().nama; d.disetujui_pada = new Date().toISOString(); d.catatan_peninjau = b.note || ''; }); persist(db); return ok({}); }
-      case 'issueQR': { const w = db.Pekerja.find(x => x.id === b.id); if (w) { w.metode = 'QR + PIN'; w.status_akun = 'menunggu aktivasi'; } persist(db); return ok({ token: 'demo' + b.id }); }
+      case 'issueQR': { const w = db.Pekerja.find(x => x.id === b.id); if (w) { w.metode = 'QR + PIN'; w.status_akun = 'QR diberikan ' + PR.today(); } persist(db); return ok({ link: `${PR.appBase()}#/qr?demo=1&w=${encodeURIComponent(b.id)}` }); }
+      case 'inviteReviewer': return ok({ link: `${PR.appBase()}#/qr?demo=1&rv=1` });
+      case 'doorLink': return ok({ link: `${PR.appBase()}#/pintu?demo=1&d=${encodeURIComponent(b.id)}` });
+      case 'notifInfo': case 'notifSet': return ok({ notif: { rekap: 'ya', kritis: 'ya', tg: 'ya' }, kalender: {}, telegram: { terhubung: false, tautan: '' } });
       case 'unlockWorker': return ok({});
-      case 'createGuest': { const row = { id: PR.uid('G'), dibuat: new Date().toISOString(), berlaku_sd: new Date(Date.now() + (b.days || 7) * 864e5).toISOString(), dicabut: '' }; (db.Tautan = db.Tautan || []).push(row); persist(db); return ok({ token: 'demoguest', id: row.id, berlaku_sd: row.berlaku_sd }); }
+      case 'createGuest': { const row = { id: PR.uid('G'), dibuat: new Date().toISOString(), berlaku_sd: new Date(Date.now() + (b.days || 7) * 864e5).toISOString(), dicabut: '' }; (db.Tautan = db.Tautan || []).push(row); persist(db); return ok({ link: `${PR.appBase()}#/tamu?demo=1`, id: row.id, berlaku_sd: row.berlaku_sd }); }
       case 'revokeGuest': { const t = (db.Tautan || []).find(x => x.id === b.id); if (t) t.dicabut = new Date().toISOString(); persist(db); return ok({}); }
-      case 'syncCalendar': return ok({ created: PR.L.dueItems().filter(i => i.days > -30).length, removed: 0, demo: true });
+      case 'syncCalendar': return ok({ n: PR.L.dueItems().filter(i => i.days > -30).length, demo: true });
       case 'testEmail': return ok({ to: 'ppr@contoh.id', demo: true });
       case 'license': return ok({ paket: 'Pro', status: 'aktif', berlaku_sd: PR.addMonths(PR.today(), 12), mode: 'demo', sisa_pindah: 2 });
       case 'moveRS': return { success: false, message: 'Pindah RS tidak tersedia di mode demo.' };
