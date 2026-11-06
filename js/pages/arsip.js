@@ -1,4 +1,4 @@
-/* ProteRad — W-13 Arsip Dokumen: dokumen wajib, terkendali (versi & cek isi), status baca SOP, laporan & kegiatan */
+/* AlaraGo — W-13 Arsip Dokumen: dokumen wajib, terkendali (versi & cek isi), status baca SOP, laporan & kegiatan */
 (function (PR) {
   'use strict';
   const U = PR.ui, L = PR.L, A = PR.api;
@@ -40,11 +40,11 @@
     if (!v) return; if (v._delete) { A.remove('Kegiatan', k.id); return PR.render(); }
     try { v.file_id = await A.uploadFrom(v, 'file_id'); delete v._files; A.save('Kegiatan', v); PR.toast('Tersimpan — jatuh tempo berikutnya masuk kalender', 'ok'); PR.render(); } catch (e) { PR.toast(e.message, 'err'); }
   };
-  PR.acts.remindSop = el => { const d = L.get('Dokumen', el.dataset.id); const un = L.activeWorkers().filter(w => !L.tb('Baca_SOP').some(b => b.dokumen_id === d.id && b.pekerja_id === w.id && String(b.revisi) === String(d.revisi))); PR.wa(`[ProteRad] Mohon baca & konfirmasi ${d.nomor} "${d.judul}" rev ${d.revisi} di portal ProteRad. Belum: ${un.map(w => w.nama).join(', ')}`); };
+  PR.acts.remindSop = el => { const d = L.get('Dokumen', el.dataset.id); const un = L.activeWorkers().filter(w => !L.tb('Baca_SOP').some(b => b.dokumen_id === d.id && b.pekerja_id === w.id && String(b.revisi) === String(d.revisi))); PR.wa(`[AlaraGo] Mohon baca & konfirmasi ${d.nomor} "${d.judul}" rev ${d.revisi} di portal AlaraGo. Belum: ${un.map(w => w.nama).join(', ')}`); };
 
   const tabs = cur => { const sops = current().filter(d => d.kategori === 'SOP' && d.status === 'disahkan'); const ws = L.activeWorkers(); const p = sops.length && ws.length ? PR.sum(sops.map(s => ws.filter(w => L.tb('Baca_SOP').some(b => b.dokumen_id === s.id && b.pekerja_id === w.id && String(b.revisi) === String(s.revisi))).length)) / (sops.length * ws.length) : null;
     return U.tabs([['wajib', 'Dokumen wajib', current().filter(d => d.jenis !== 'terkendali').length, '#/arsip'], ['terkendali', 'Dokumen terkendali', current().filter(d => d.jenis === 'terkendali').length, '#/arsip/terkendali'], ['baca', 'Status baca SOP', p != null ? PR.pct(p) : null, '#/arsip/baca'], ['kegiatan', 'Laporan & kegiatan', L.tb('Kegiatan').length, '#/arsip/kegiatan']], cur); };
-  const head = () => U.head('ARSIP DOKUMEN & REKAMAN TERKENDALI', 'Dokumen wajib, dokumen terkendali (nomor, revisi, tinjau ulang), konfirmasi baca SOP, serta laporan & kegiatan proteksi radiasi.', `${U.btn('Unggah dokumen', 'addDoc', 'file-up', 'btn-y')}`);
+  const head = () => U.head('Arsip dokumen & rekaman terkendali', 'Dokumen wajib, dokumen terkendali (nomor, revisi, tinjau ulang), konfirmasi baca SOP, serta laporan & kegiatan proteksi radiasi.', `${U.btn('Unggah dokumen', 'addDoc', 'file-up', 'btn-y')}`);
 
   function wajib() {
     const docOf = k => current().filter(d => d.kategori === k).sort((a, b) => String(b.tanggal_berlaku).localeCompare(a.tanggal_berlaku))[0];
@@ -58,7 +58,7 @@
       <div class="filters"><div class="search">${PR.ic('search')}<input class="inp" placeholder="Cari judul atau nomor dokumen…" value="${PR.esc(st.q)}" data-af="q"></div>
         <select class="inp" data-af="kat"><option value="">Semua kategori</option>${L.KATEGORI.map(k => `<option ${st.kat === k ? 'selected' : ''}>${PR.esc(k)}</option>`).join('')}</select>
         <select class="inp" data-af="status"><option value="">Semua status</option>${['disahkan', 'ditinjau', 'draf'].map(s => `<option ${st.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
-      <div class="panel"><div class="panel-h panel-dark"><h3 style="color:#fff">${PR.ic('folder-open')} Daftar dokumen & rekaman</h3><span class="mono tiny" style="color:#C9CDD3">${rows.length} DOKUMEN</span></div>
+      <div class="panel"><div class="panel-h panel-dark"><h3 style="color:#fff">${PR.ic('folder-open')} Daftar dokumen & rekaman</h3><span class="mono tiny" style="color:#C9CDD3">${rows.length} Dokumen</span></div>
       ${U.table([{ h: 'Kode & nomor', v: d => `<span class="num small">${PR.esc(d.nomor || '—')}</span>` }, { h: 'Judul', v: d => `<a href="#/arsip/dok/${d.id}"><b>${PR.esc(d.judul)}</b></a><span class="sub">${PR.esc(d.kategori)}</span>` },
         { h: 'Objek', v: d => d.objek_tipe === 'alat' ? PR.tag(L.alatName(L.get('Alat', d.objek_id)), 'netral', 1) : PR.tag('fasilitas', 'netral', 1) }, { h: 'Revisi', v: d => PR.esc(d.revisi || '—') },
         { h: 'Berlaku / tinjau ulang', v: d => `<span class="num small">${PR.d(d.berlaku_sd || d.tinjau_ulang)}</span>${(d.berlaku_sd || d.tinjau_ulang) ? `<span class="sub">${PR.dueTag(PR.left(d.berlaku_sd || d.tinjau_ulang))}</span>` : ''}` },
@@ -89,13 +89,13 @@
     const root = d.induk_id || d.id, hist = docs().filter(x => x.id === root || x.induk_id === root).sort((a, b) => (parseInt(b.revisi, 10) || 0) - (parseInt(a.revisi, 10) || 0));
     const c = cekOf(d), showCek = d.kategori === 'PPKR' || d.kategori === 'SOP';
     const dcs = Object.values(L.dcRows ? L.dcRows() : {});
-    return `<div class="page-head"><div><div class="eyebrow"><a href="#/arsip">ARSIP DOKUMEN</a> / ${PR.esc(d.kategori.toUpperCase())}</div><h1 style="margin-top:6px">${PR.esc(d.judul)}</h1><div class="row mt8"><span class="tag">${PR.esc(d.nomor || '—')}</span><span class="tag">REV ${PR.esc(d.revisi || '—')}</span>${docTag(d)}</div></div>
+    return `<div class="page-head"><div><div class="eyebrow"><a href="#/arsip">Arsip dokumen</a> / ${PR.esc(d.kategori)}</div><h1 style="margin-top:6px">${PR.esc(d.judul)}</h1><div class="row mt8"><span class="tag">${PR.esc(d.nomor || '—')}</span><span class="tag">REV ${PR.esc(d.revisi || '—')}</span>${docTag(d)}</div></div>
       <div class="actions">${d.file_id ? `<button class="btn" data-act="openFile" data-id="${d.file_id}">${PR.ic('eye')}Lihat PDF asli</button>` : ''}${U.btn('Ubah', 'addDoc', 'pencil', '', `data-id="${d.id}"`)}${d.status !== 'tidak berlaku' ? U.btn('Unggah revisi baru', 'revDoc', 'file-up', 'btn-y', `data-id="${d.id}"`) : ''}</div></div>
       <div class="grid g-8-4"><div class="stack">
         <div class="panel"><div class="panel-b"><div class="kv2">${[['Kategori', d.kategori], ['Jenis', d.jenis === 'terkendali' ? 'Dokumen terkendali' : 'Rekaman'], ['Tanggal berlaku', PR.d(d.tanggal_berlaku)], ['Berlaku s.d.', PR.d(d.berlaku_sd)], ['Tinjau ulang', PR.d(d.tinjau_ulang)], ['Penyusun', d.penyusun], ['Pengesah', d.pengesah], ['Berkas', d.file_nama ? d.file_nama + (d.file_ukuran ? ' · ' + Math.round(PR.n(d.file_ukuran) / 1024) + ' KB' : '') : '—']].map(([k, v]) => `<div><small>${k}</small>${PR.esc(v || '—')}</div>`).join('')}</div>
           ${d.ringkasan ? `<p class="small" style="margin:12px 0 0"><b>Ringkasan:</b> ${PR.esc(d.ringkasan)}</p>` : ''}</div></div>
         ${showCek ? `<div class="panel"><div class="panel-h"><h3>${PR.ic('scan-search')} Cek isi dokumen sebelum inspeksi</h3>${PR.tag(L.CEK_ISI.filter(x => c[x[0]]).length + '/' + L.CEK_ISI.length, L.CEK_ISI.every(x => c[x[0]]) ? 'aman' : 'tinjau', 1)}</div><div class="panel-b stack" style="gap:10px">
-          ${L.CEK_ISI.map(([k, l]) => `<label class="chk"><input type="checkbox" data-act="cekIsi" data-id="${d.id}" data-k="${k}" ${c[k] ? 'checked' : ''} ${PR.ro() ? 'disabled' : ''}><span><b style="font-weight:500">${l}</b>${k === 'dc' && dcs.length ? `<span class="sub tiny muted"> · Hasil perhitungan ProteRad: ${dcs.map(x => PR.esc(x.profesi) + ' ' + PR.f(PR.n(x.nilai)) + ' mSv').join(' · ')}</span>` : ''}${k === 'dasar_hukum' ? '<span class="sub tiny muted"> · contoh acuan: PP 45/2023, Perba BAPETEN 4/2020, Perba BAPETEN 4/2024, Pedoman Teknis Pembatas Dosis 2021</span>' : ''}</span></label>`).join('')}
+          ${L.CEK_ISI.map(([k, l]) => `<label class="chk"><input type="checkbox" data-act="cekIsi" data-id="${d.id}" data-k="${k}" ${c[k] ? 'checked' : ''} ${PR.ro() ? 'disabled' : ''}><span><b style="font-weight:500">${l}</b>${k === 'dc' && dcs.length ? `<span class="sub tiny muted"> · Hasil perhitungan AlaraGo: ${dcs.map(x => PR.esc(x.profesi) + ' ' + PR.f(PR.n(x.nilai)) + ' mSv').join(' · ')}</span>` : ''}${k === 'dasar_hukum' ? '<span class="sub tiny muted"> · contoh acuan: PP 45/2023, Perba BAPETEN 4/2020, Perba BAPETEN 4/2024, Pedoman Teknis Pembatas Dosis 2021</span>' : ''}</span></label>`).join('')}
           <p class="small muted" style="margin:0">Daftar cek ini disusun dari temuan inspeksi yang umum terjadi; bukan pengganti penilaian inspektur.</p></div></div>` : ''}
       </div><div class="stack">
         <div class="panel"><div class="panel-h"><h3>${PR.ic('history')} Riwayat revisi</h3><span class="small muted">${hist.length} versi</span></div><div class="panel-b" style="padding-top:4px;padding-bottom:4px">${hist.map(h => `<a class="list-row" href="#/arsip/dok/${h.id}" style="text-decoration:none;${h.id === d.id ? 'background:var(--y-t);margin:0 -16px;padding:10px 16px' : ''}"><span class="tag">REV ${PR.esc(h.revisi)}</span><div class="grow"><b>${PR.d(h.tanggal_berlaku)}</b><span>${PR.esc(h.ringkasan || '')}</span></div>${docTag(h)}</a>`).join('')}</div></div>
@@ -104,7 +104,7 @@
   }
   PR.page('arsip', {
     title: 'Arsip Dokumen', roles: ['ppr', 'peninjau'],
-    crumb: r => `ARSIP DOKUMEN / <b>${{ terkendali: 'DOKUMEN TERKENDALI', baca: 'STATUS BACA SOP', kegiatan: 'LAPORAN & KEGIATAN', dok: 'DETAIL DOKUMEN' }[r.parts[0]] || 'DOKUMEN WAJIB'}</b>`,
+    crumb: r => `Arsip dokumen / <b>${{ terkendali: 'Dokumen terkendali', baca: 'Status baca SOP', kegiatan: 'Laporan & kegiatan', dok: 'Detail dokumen' }[r.parts[0]] || 'Dokumen wajib'}</b>`,
     render: r => ({ terkendali, baca, kegiatan }[r.parts[0]] || (r.parts[0] === 'dok' ? () => detail(r.parts[1]) : wajib))(),
     mount: root => PR.$$('[data-af]', root).forEach(el => { el[el.tagName === 'INPUT' ? 'oninput' : 'onchange'] = PR.debounce(() => { st[el.dataset.af] = el.value; PR.render(); const f = PR.$(`[data-af="${el.dataset.af}"]`); if (f && f.tagName === 'INPUT') { f.focus(); f.setSelectionRange(f.value.length, f.value.length); } }, el.tagName === 'INPUT' ? 250 : 0); })
   });

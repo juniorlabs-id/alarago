@@ -1,4 +1,4 @@
-/* ProteRad — logika domain: dosis, pembatas dosis (Q3), survei, kesiapan inspeksi, jatuh tempo */
+/* AlaraGo — logika domain: dosis, pembatas dosis (Q3), survei, kesiapan inspeksi, jatuh tempo */
 (function (PR) {
   'use strict';
   const L = PR.L = {};
@@ -264,12 +264,12 @@
     for (let i = 0; i <= ticks; i++) { const v = max / ticks * i; g += `<line x1="${pl}" x2="${W - pr}" y1="${y(v)}" y2="${y(v)}" stroke="#EEF0F3"/><text x="${pl - 6}" y="${y(v) + 3}" text-anchor="end">${PR.f(v, v < 10 ? 1 : 0)}</text>`; }
     bars.forEach((b, i) => {
       const x = pl + i * bw + bw * 0.2, h = Math.max(0, H - pb - y(b.v || 0));
-      g += `<rect x="${x}" y="${y(b.v || 0)}" width="${bw * 0.6}" height="${h}" fill="${b.c || '#9AA0A8'}" ${b.hl ? 'stroke="#121212" stroke-width="1.5"' : ''}/>`;
-      g += `<text x="${x + bw * 0.3}" y="${y(b.v || 0) - 4}" text-anchor="middle" style="fill:#121212;font-weight:600">${b.v != null && b.v !== '' ? PR.f(b.v) : '—'}</text>`;
+      g += `<rect x="${x}" y="${y(b.v || 0)}" width="${bw * 0.6}" height="${h}" fill="${b.c || '#D3D1C9'}" ${b.hl ? 'stroke="#2A2A2E" stroke-width="1.5"' : ''}/>`;
+      g += `<text x="${x + bw * 0.3}" y="${y(b.v || 0) - 4}" text-anchor="middle" style="fill:#2A2A2E;font-weight:600">${b.v != null && b.v !== '' ? PR.f(b.v) : '—'}</text>`;
       g += `<text x="${x + bw * 0.3}" y="${H - 8}" text-anchor="middle">${PR.esc(b.l)}</text>`;
     });
     lines.forEach(l => { g += `<line x1="${pl}" x2="${W - pr}" y1="${y(l.v)}" y2="${y(l.v)}" stroke="${l.c}" stroke-width="${l.w || 1.5}" ${l.dash ? 'stroke-dasharray="5 4"' : ''}/><text x="${W - pr + 4}" y="${y(l.v) + 3}" style="fill:${l.c};font-weight:600">${PR.esc(l.label)}</text>`; });
-    return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${PR.esc(opt.label || 'Grafik')}">${g}<line x1="${pl}" x2="${W - pr}" y1="${H - pb}" y2="${H - pb}" stroke="#121212"/></svg>`;
+    return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${PR.esc(opt.label || 'Grafik')}">${g}<line x1="${pl}" x2="${W - pr}" y1="${H - pb}" y2="${H - pb}" stroke="#2A2A2E"/></svg>`;
   };
   L.lineChart = (pts, opt) => {
     opt = opt || {}; const W = opt.w || 560, H = opt.h || 200, pl = 36, pb = 24, pt = 14, pr = 70;
@@ -282,9 +282,9 @@
     if (opt.band) g += `<rect x="${pl}" width="${W - pl - pr}" y="${y(opt.band[1])}" height="${y(opt.band[0]) - y(opt.band[1])}" fill="#EEF0F3"/>`;
     lines.forEach(l => { g += `<line x1="${pl}" x2="${W - pr}" y1="${y(l.v)}" y2="${y(l.v)}" stroke="${l.c}" stroke-width="${l.w || 1.5}" ${l.dash ? 'stroke-dasharray="5 4"' : ''}/><text x="${W - pr + 4}" y="${y(l.v) + 3}" style="fill:${l.c};font-weight:600">${PR.esc(l.label)}</text>`; });
     const path = pts.map((p, i) => p.v == null ? '' : `${x(i)},${y(p.v)}`).filter(Boolean);
-    if (path.length > 1) g += `<polyline points="${path.join(' ')}" fill="none" stroke="#121212" stroke-width="1.75"/>`;
-    pts.forEach((p, i) => { if (p.v != null) g += `<rect x="${x(i) - 4}" y="${y(p.v) - 4}" width="8" height="8" fill="${p.c || '#121212'}"/><text x="${x(i)}" y="${y(p.v) - 9}" text-anchor="middle" style="fill:#121212">${PR.f(p.v)}</text>`; g += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle">${PR.esc(p.l)}</text>`; });
-    return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${PR.esc(opt.label || 'Grafik')}">${g}<line x1="${pl}" x2="${W - pr}" y1="${H - pb}" y2="${H - pb}" stroke="#121212"/></svg>`;
+    if (path.length > 1) g += `<polyline points="${path.join(' ')}" fill="none" stroke="#2A2A2E" stroke-width="1.75"/>`;
+    pts.forEach((p, i) => { if (p.v != null) g += `<rect x="${x(i) - 4}" y="${y(p.v) - 4}" width="8" height="8" fill="${p.c || '#2A2A2E'}"/><text x="${x(i)}" y="${y(p.v) - 9}" text-anchor="middle" style="fill:#2A2A2E">${PR.f(p.v)}</text>`; g += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle">${PR.esc(p.l)}</text>`; });
+    return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${PR.esc(opt.label || 'Grafik')}">${g}<line x1="${pl}" x2="${W - pr}" y1="${H - pb}" y2="${H - pb}" stroke="#2A2A2E"/></svg>`;
   };
-  L.STATUS_COLOR = { aman: '#1F8A4C', tinjau: '#C9850F', analisis: '#B23A0B', kritis: '#C92A2A', bg: '#9AA0A8', kosong: '#D6D9DE', nobatas: '#5B616B' };
+  L.STATUS_COLOR = { aman: '#1F8A4C', tinjau: '#D99A22', analisis: '#BD5427', kritis: '#C23B3B', bg: '#D3D1C9', kosong: '#E3E2DC', nobatas: '#CFCDC6' };
 })(window.PR);

@@ -1,4 +1,4 @@
-/* ProteRad — boot aplikasi: tampil instan dari cache, segarkan di latar, PWA */
+/* AlaraGo — boot aplikasi: tampil instan dari cache, segarkan di latar, PWA */
 (function (PR) {
   'use strict';
   const A = PR.api;
@@ -28,7 +28,7 @@
 
   // ---------- PWA ----------
   window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); PR.installEvt = e; PR.$$('[data-act=install]').forEach(x => x.hidden = false); });
-  window.addEventListener('appinstalled', () => { PR.installEvt = null; PR.$$('[data-act=install]').forEach(x => x.hidden = true); PR.toast('ProteRad terpasang', 'ok'); });
+  window.addEventListener('appinstalled', () => { PR.installEvt = null; PR.$$('[data-act=install]').forEach(x => x.hidden = true); PR.toast('AlaraGo terpasang', 'ok'); });
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js').then(reg => {
@@ -36,7 +36,7 @@
           const nw = reg.installing; if (!nw) return;
           nw.addEventListener('statechange', () => {
             if (nw.state === 'installed' && navigator.serviceWorker.controller) {
-              PR.toast('Versi baru ProteRad tersedia.', 'ok', { label: 'Muat ulang', fn: () => nw.postMessage('skip') });
+              PR.toast('Versi baru AlaraGo tersedia.', 'ok', { label: 'Muat ulang', fn: () => nw.postMessage('skip') });
             }
           });
         });

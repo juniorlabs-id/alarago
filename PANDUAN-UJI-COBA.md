@@ -1,6 +1,6 @@
-# Panduan Uji Coba — Arsitektur Baru ProteRad
+# Panduan Uji Coba — Arsitektur Baru AlaraGo
 
-Tujuan uji coba: membuktikan di akun Google **sungguhan** bahwa ProteRad bisa berjalan **tanpa backend di akun PPR**.
+Tujuan uji coba: membuktikan di akun Google **sungguhan** bahwa AlaraGo bisa berjalan **tanpa backend di akun PPR**.
 
 ```
 Aplikasi (GitHub Pages)
@@ -35,13 +35,13 @@ Gunakan project dan **OAuth Client ID yang sama** seperti sebelumnya.
 
 ## B. Relay — 10 menit (penjual, sekali)
 
-1. Masuk ke **akun Google Mas Bro** → buka **https://script.new** → beri nama `ProteRad Relay`.
+1. Masuk ke **akun Google Mas Bro** → buka **https://script.new** → beri nama `AlaraGo Relay`.
 2. **⚙️ Project Settings** → centang *Show "appsscript.json"* → tempel isi berkas **`appsscript-relay.json`**.
 3. Tempel seluruh isi **`Relay.gs`** ke `Code.gs`. Di bagian atas berkas, isi:
    - `CLIENT_ID` dengan Client ID yang sama dengan `js/config.js`;
-   - `APP_URL` dengan `https://juniorlabs-id.github.io/proterad/`.
+   - `APP_URL` dengan `https://juniorlabs-id.github.io/alarago/`.
 4. Pilih fungsi **`setupRelay`** → **Run** → izinkan akses.
-   - Folder **📡 ProteRad Relay** dan sheet **Akun & Lisensi** akan dibuat.
+   - Folder **📡 AlaraGo Relay** dan sheet **Akun & Lisensi** akan dibuat.
    - Pemicu harian ±08.00 WIB juga dipasang otomatis.
 5. **Deploy → New deployment → Web app** → Execute as **Me** · Who has access **Anyone** → salin URL `/exec`.
 6. **Telegram (opsional):**
@@ -62,7 +62,7 @@ git commit -m "Uji coba arsitektur baru"
 git push
 ```
 
-Halaman uji coba ada di: **https://juniorlabs-id.github.io/proterad/poc/**
+Halaman uji coba ada di: **https://juniorlabs-id.github.io/alarago/poc/**
 
 ---
 
@@ -74,10 +74,10 @@ Di halaman uji coba, ikuti kartu 0–4. Panel **Log & waktu** di bawah mencatat 
 |---|---|---|
 | 1 | **Langkah 0:** isi Client ID & URL relay → Simpan | — |
 | 2 | **Langkah 1:** Masuk dengan Google | ❓ Apakah muncul layar **"Google belum memverifikasi aplikasi ini"**? (seharusnya **tidak**) |
-| 3 | **Langkah 2:** Cari/buat database → Isi contoh → Uji tulis 200 baris → Uji unggah berkas | Spreadsheet **ProteRad — Database** muncul di Drive Anda. Waktu tiap aksi idealnya < 1.000 ms. |
+| 3 | **Langkah 2:** Cari/buat database → Isi contoh → Uji tulis 200 baris → Uji unggah berkas | Spreadsheet **AlaraGo — Database** muncul di Drive Anda. Waktu tiap aksi idealnya < 1.000 ms. |
 | 4 | Buka aplikasi di **perangkat lain** (mis. HP) → login → Cari/buat database | Harus **menemukan** spreadsheet yang sama, bukan membuat baru |
 | 5 | **Langkah 3:** ubah tahapan/kritis → Simpan pengaturan → Kirim jadwal → **Kirim rekap uji** | Email rekap masuk (cek juga folder Spam). Telegram masuk bila sudah dihubungkan. |
-| 6 | Salin **tautan ICS** → Google Kalender → *Tambah kalender → Dari URL* | Kalender "ProteRad" muncul. Tanpa pop-up, dan bisa butuh beberapa jam untuk tampil. |
+| 6 | Salin **tautan ICS** → Google Kalender → *Tambah kalender → Dari URL* | Kalender "AlaraGo" muncul. Tanpa pop-up, dan bisa butuh beberapa jam untuk tampil. |
 | 7 | **Langkah 4:** Buat QR untuk Budi → pindai dari **HP lain** → buat PIN → **Sudah saya baca** → kembali ke laptop → Ambil konfirmasi | Kolom `dibaca_pada` di spreadsheet terisi. |
 | 8 | Di HP pekerja: tutup → buka lagi → masukkan PIN | Terbuka tanpa memindai QR lagi |
 | 9 | Biarkan halaman PPR terbuka **> 1 jam**, lalu klik tombol apa pun | ❓ Apakah token diperbarui otomatis (popup sekilas) atau perlu login ulang? |
@@ -91,7 +91,7 @@ Di halaman uji coba, ikuti kartu 0–4. Panel **Log & waktu** di bawah mencatat 
    - `KODE_KALENDER` dengan kode dari langkah 3 di halaman uji coba.
 3. Pilih fungsi **`pasang`** → **Run** → izinkan Kalender.
 4. Periksa Google Kalender:
-   - acara **[ProteRad] ⏰ …** muncul pukul 08.00 di hari jatuh tempo, dengan pop-up pukul 08.00 sesuai tahapan;
+   - acara **[AlaraGo] ⏰ …** muncul pukul 08.00 di hari jatuh tempo, dengan pop-up pukul 08.00 sesuai tahapan;
    - tahapan lebih dari 28 hari dibuat sebagai acara **⏳ H-n** tersendiri.
 5. Untuk melepas: jalankan **`lepas`**.
 

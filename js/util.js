@@ -1,4 +1,4 @@
-/* ProteRad — utilitas umum */
+/* AlaraGo — utilitas umum */
 window.PR = window.PR || {};
 (function (PR) {
   'use strict';
@@ -8,7 +8,7 @@ window.PR = window.PR || {};
 
   PR.esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   PR.ic = (n, cls) => `<svg class="ic ${cls || ''}" viewBox="0 0 24 24" aria-hidden="true">${(window.ICONS || {})[n] || ''}</svg>`;
-  PR.trefoil = '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M55.50 59.53L69.00 82.91A38 38 0 0 1 31.00 82.91L44.50 59.53A11 11 0 0 0 55.50 59.53ZM39.00 50.00L12.00 50.00A38 38 0 0 1 31.00 17.09L44.50 40.47A11 11 0 0 0 39.00 50.00ZM55.50 40.47L69.00 17.09A38 38 0 0 1 88.00 50.00L61.00 50.00A11 11 0 0 0 55.50 40.47Z" fill="#121212"/><circle cx="50" cy="50" r="7" fill="#121212"/></svg>';
+  PR.trefoil = '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M55.50 59.53L69.00 82.91A38 38 0 0 1 31.00 82.91L44.50 59.53A11 11 0 0 0 55.50 59.53ZM39.00 50.00L12.00 50.00A38 38 0 0 1 31.00 17.09L44.50 40.47A11 11 0 0 0 39.00 50.00ZM55.50 40.47L69.00 17.09A38 38 0 0 1 88.00 50.00L61.00 50.00A11 11 0 0 0 55.50 40.47Z" fill="currentColor"/><circle cx="50" cy="50" r="7" fill="currentColor"/></svg>';
   PR.logo = () => `<span class="logo">${PR.trefoil}</span>`;
   PR.uid = p => (p || 'X') + Date.now().toString(36).slice(-5) + Math.random().toString(36).slice(2, 6);
 
@@ -36,8 +36,8 @@ window.PR = window.PR || {};
     aman: ['t-aman', 'circle-check'], tinjau: ['t-tinjau', 'circle-alert'], analisis: ['t-analisis', 'scan-search'], kritis: ['t-kritis', 'triangle-alert'],
     netral: ['', ''], ink: ['t-ink', ''], y: ['t-y', ''], dash: ['t-dash', '']
   };
-  PR.tag = (label, kind, noicon) => { const t = TAGS[kind] || TAGS.netral; return `<span class="tag ${t[0]}">${t[1] && !noicon ? PR.ic(t[1]) : ''}[${PR.esc(label)}]</span>`; };
-  PR.lvl = l => l === 'kritis' ? `<span class="tag t-ink">[KRITIS · BOBOT 3]</span>` : l === 'penting' ? `<span class="tag" style="border-color:var(--ink)">[PENTING · BOBOT 2]</span>` : `<span class="tag t-dash">[PENDUKUNG · BOBOT 1]</span>`;
+  PR.tag = (label, kind, noicon) => { const t = TAGS[kind] || TAGS.netral; return `<span class="tag ${t[0]}">${t[1] && !noicon ? PR.ic(t[1]) : ''}${PR.esc(label)}</span>`; };
+  PR.lvl = l => l === 'kritis' ? `<span class="tag t-ink">Kritis · bobot 3</span>` : l === 'penting' ? `<span class="tag" style="border-color:var(--ink)">Penting · bobot 2</span>` : `<span class="tag t-dash">Pendukung · bobot 1</span>`;
   PR.dueTag = n => n == null ? '' : n < 0 ? PR.tag('lewat ' + -n + ' hr', 'kritis') : n <= 7 ? PR.tag('H-' + n, 'kritis') : n <= 30 ? PR.tag('H-' + n, 'tinjau') : PR.tag('H-' + n, 'netral');
   PR.validTag = (sd, proses) => { const n = PR.left(sd); if (!sd) return PR.tag('belum ada', 'kritis'); if (n < 0) return proses ? PR.tag('diproses', 'tinjau') : PR.tag('kedaluwarsa', 'kritis'); if (n <= 30) return PR.tag('≤ 30 hari', 'tinjau'); return PR.tag('berlaku', 'aman'); };
 

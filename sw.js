@@ -1,5 +1,5 @@
-/* ProteRad — service worker: app shell offline + cache font/CDN. Data API (script.google.com) tidak pernah di-cache di sini. */
-const VERSION = 'proterad-v1.0.0';
+/* AlaraGo — service worker: app shell offline + cache font/CDN. Data API (script.google.com) tidak pernah di-cache di sini. */
+const VERSION = 'alarago-v1.1.0';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './css/style.css',
   './js/config.js', './js/icons.js', './js/util.js', './js/logic.js', './js/api.js', './js/demo.js', './js/ui.js',
@@ -8,12 +8,12 @@ const SHELL = [
   './js/pages/portal.js', './js/pages/akses.js', './js/pages/cetak.js', './js/app.js', './js/vendor/qrcode.min.js',
   './icons/favicon.svg', './icons/favicon-32.png', './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png', './icons/apple-touch-icon.png'
 ];
-const EXT_CACHE = 'proterad-ext-v1';
+const EXT_CACHE = 'alarago-ext-v1';
 const EXT = /^https:\/\/(fonts\.googleapis\.com|fonts\.gstatic\.com|cdnjs\.cloudflare\.com)\//;
 const NEVER = /^https:\/\/(script\.google\.com|script\.googleusercontent\.com|accounts\.google\.com|oauth2\.googleapis\.com|www\.googleapis\.com)\//;
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL.map(u => new Request(u, { cache: 'reload' })))));
+  e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 self.addEventListener('message', e => { if (e.data === 'skip') self.skipWaiting(); });
 self.addEventListener('activate', e => {
@@ -27,6 +27,13 @@ self.addEventListener('fetch', e => {
 
   if (url.origin === location.origin) {
     // navigasi: selalu kembalikan index.html (SPA hash router), segarkan di latar
+    const root = new URL(self.registration.scope).pathname;
+    const isApp = url.pathname === root || url.pathname === root + 'index.html';
+    if (req.mode === 'navigate' && !isApp) {
+      // halaman lain (poc/, privasi.html): jaringan dulu, cadangan dari cache
+      e.respondWith(fetch(req).then(res => { if (res.ok) caches.open(VERSION).then(c => c.put(req, res.clone())); return res; }).catch(() => caches.match(req)));
+      return;
+    }
     if (req.mode === 'navigate') {
       e.respondWith(caches.match('./index.html').then(hit => {
         const net = fetch(req).then(res => { if (res.ok) caches.open(VERSION).then(c => c.put('./index.html', res.clone())); return res; }).catch(() => hit);

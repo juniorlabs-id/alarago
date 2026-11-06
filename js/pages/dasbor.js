@@ -1,20 +1,20 @@
-/* ProteRad — W-01/W-02 Dasbor */
+/* AlaraGo — W-01/W-02 Dasbor */
 (function (PR) {
   'use strict';
   const U = PR.ui, L = PR.L;
   PR.page('dasbor', {
     title: 'Dasbor', roles: ['ppr', 'peninjau'],
-    crumb: () => 'SISTEM KONTROL PROTEKSI RADIASI / <b>DASBOR</b>',
+    crumb: () => 'Sistem kontrol proteksi radiasi / <b>Dasbor</b>',
     render: () => {
       const R = L.readiness(), due = L.dueItems().filter(i => i.days <= 30 && i.status !== 'selesai').slice(0, 6);
       const ws = L.activeWorkers().map(w => ({ w, s: L.doseStatus(w) })).filter(x => x.s.status !== 'aman').sort((a, b) => b.s.ratio - a.s.ratio);
       const cons = L.consistency();
-      return `${U.head('DASBOR KEPATUHAN', 'Kesiapan inspeksi dan status keselamatan radiasi fasilitas — diperbarui otomatis dari semua menu.',
-        `<button class="btn" data-go="#/inspeksi">${PR.ic('sliders-horizontal')}Simulasi inspeksi</button>${U.btn('Buat paket inspeksi', '', 'file-check', 'btn-y ro-ok', 'data-go="#/cetak/paket"')}`, 'KONTROL MONITORING UTAMA')}
+      return `${U.head('Dasbor kepatuhan', 'Kesiapan inspeksi dan status keselamatan radiasi fasilitas — diperbarui otomatis dari semua menu.',
+        `<button class="btn" data-go="#/inspeksi">${PR.ic('sliders-horizontal')}Simulasi inspeksi</button>${U.btn('Buat paket inspeksi', '', 'file-check', 'btn-y ro-ok', 'data-go="#/cetak/paket"')}`, 'Kontrol monitoring utama')}
       ${R.gates.length ? `<div class="ban ban-crit">${PR.ic('triangle-alert', 'ic-l')}<div class="grow"><b>Item kritis gagal — skor dibatasi maksimal 59%</b><p>${R.gates.map(g => PR.esc(g.label)).join(' · ')}</p></div><button class="btn btn-d btn-s" data-go="${R.gates[0].route}">Perbaiki</button></div>` : ''}
       <div class="grid g-4-8">
         <div class="panel"><div class="panel-b">
-          <div class="spread"><span class="eyebrow">Skor kesiapan fasilitas</span><span class="tag">ESTIMASI</span></div>
+          <div class="spread"><span class="eyebrow">Skor kesiapan fasilitas</span><span class="tag">Estimasi</span></div>
           <div class="row mt8" style="align-items:flex-end;gap:14px"><span class="score">${Math.round(R.score * 100)}%</span>${PR.tag(R.label, R.kind)}</div>
           <p class="small muted" style="margin:6px 0 16px">Perkiraan internal, bukan nilai IKK resmi.</p>
           <div class="spread small"><span>Progres menuju siap</span><span class="mono">target ≥ 90%</span></div>
@@ -29,7 +29,7 @@
           }).join('')}</div></div>
       </div>
       <div class="grid g2 mt">
-        <div class="panel"><div class="panel-h"><h3>${PR.ic('zap')} Perbaiki ini dulu</h3><span class="tag t-ink">${R.fixes.length} ITEM</span></div><div class="panel-b" style="padding-top:4px;padding-bottom:4px">
+        <div class="panel"><div class="panel-h"><h3>${PR.ic('zap')} Perbaiki ini dulu</h3><span class="tag t-ink">${R.fixes.length} Item</span></div><div class="panel-b" style="padding-top:4px;padding-bottom:4px">
           ${R.fixes.length ? R.fixes.slice(0, 5).map((f, i) => `<div class="list-row"><span class="mono muted">${String(i + 1).padStart(2, '0')}.</span><div class="grow"><b>${PR.esc(f.label)}</b><span>Bagian ${f.sec} · ${PR.esc(f.detail || '')}</span></div>${f.gate ? PR.tag('kritis', 'kritis', 1) : ''}<span class="impact">+${Math.max(1, Math.round(f.impact * 100))}%</span><button class="btn btn-d btn-s" data-go="${f.route}">Perbaiki</button></div>`).join('') : U.empty('Semua item terpenuhi. Pertahankan!')}
         </div></div>
         <div class="panel"><div class="panel-h"><h3>${PR.ic('calendar-check')} Jatuh tempo 30 hari</h3><a class="small" href="#/kalender">Buka Kalender Kepatuhan →</a></div><div class="panel-b" style="padding-top:4px;padding-bottom:4px">

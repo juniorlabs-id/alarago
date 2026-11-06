@@ -3,32 +3,33 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Kebijakan Privasi · ProteRad</title>
-  <meta name="theme-color" content="#121212">
+  <title>Kebijakan Privasi · AlaraGo</title>
+  <meta name="theme-color" content="#F5F5F2">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap">
   <link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
   <style>
-    :root{--y:#FFC21A;--ink:#121212;--muted:#5B616B;--line:#D9DCE1}
-    body{margin:0;background:#F2F3F5;color:var(--ink);font:15px/1.65 Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
-    .hz{height:10px;background:repeating-linear-gradient(-45deg,var(--y) 0 12px,var(--ink) 12px 24px)}
+    :root{--y:#F0B33E;--ink:#2A2A2E;--muted:#6E6E76;--line:#E9E8E3}
+    body{margin:0;background:#F5F5F2;color:var(--ink);font:16px/1.7 Nunito,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+    .hz{height:4px;background:linear-gradient(90deg,#F0B33E,#F7D27F)}
     main{max-width:780px;margin:0 auto;padding:28px 16px 64px}
-    h1{font:700 30px/1.2 "Barlow Semi Condensed",Arial Narrow,Arial,sans-serif;text-transform:uppercase;letter-spacing:.02em;margin:8px 0 4px}
-    h2{font:700 19px/1.3 "Barlow Semi Condensed",Arial Narrow,Arial,sans-serif;text-transform:uppercase;letter-spacing:.03em;margin:28px 0 6px;border-left:4px solid var(--y);padding-left:10px}
+    h1{font:800 32px/1.2 Nunito,system-ui,sans-serif;letter-spacing:-.01em;margin:8px 0 4px}
+    h2{font:800 20px/1.3 Nunito,system-ui,sans-serif;margin:30px 0 6px}
     .muted{color:var(--muted)} code{background:#fff;border:1px solid var(--line);padding:1px 5px;font-size:13px}
-    table{border-collapse:collapse;width:100%;background:#fff;font-size:14px} td,th{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top} th{background:var(--ink);color:#fff;font-weight:600}
+    table{border-collapse:separate;border-spacing:0;width:100%;background:#fff;font-size:14.5px;border:1px solid var(--line);border-radius:14px;overflow:hidden} td,th{border-bottom:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top} tr:last-child td{border-bottom:0} th{background:#FFF6E2;color:#3A2C0E;font-weight:700}
     a{color:var(--ink)}
   </style>
 </head>
 <body>
 <div class="hz"></div>
 <main>
-  <p class="muted" style="margin:0;font:12px monospace;letter-spacing:.1em">PROTERAD · JUNIORLABS</p>
+  <p class="muted" style="margin:0;font-weight:700">AlaraGo · JuniorLabs</p>
   <h1>Kebijakan Privasi</h1>
   <p class="muted">Berlaku sejak 6 November 2026</p>
 
-  <p>ProteRad adalah aplikasi web untuk Petugas Proteksi Radiasi (PPR) mencatat kepatuhan proteksi radiasi di fasilitasnya. Halaman ini menjelaskan data apa yang diproses, di mana disimpan, dan siapa yang dapat mengaksesnya.</p>
+  <p>AlaraGo adalah aplikasi web untuk Petugas Proteksi Radiasi (PPR) mencatat kepatuhan proteksi radiasi di fasilitasnya. Halaman ini menjelaskan data apa yang diproses, di mana disimpan, dan siapa yang dapat mengaksesnya.</p>
 
   <h2>1. Data utama disimpan di Google Drive milik PPR</h2>
-  <p>Seluruh data fasilitas (inventaris alat, data pekerja, dosis, MCU berupa kesimpulan, survei, dokumen) disimpan dalam spreadsheet dan folder <b>di Google Drive milik akun PPR sendiri</b>. ProteRad meminta izin Google <code>drive.file</code>, yang hanya memberi akses ke berkas yang dibuat atau dibuka melalui ProteRad, bukan ke berkas lain di Drive Anda. Penyedia ProteRad tidak memiliki akses ke spreadsheet tersebut.</p>
+  <p>Seluruh data fasilitas (inventaris alat, data pekerja, dosis, MCU berupa kesimpulan, survei, dokumen) disimpan dalam spreadsheet dan folder <b>di Google Drive milik akun PPR sendiri</b>. AlaraGo meminta izin Google <code>drive.file</code>, yang hanya memberi akses ke berkas yang dibuat atau dibuka melalui AlaraGo, bukan ke berkas lain di Drive Anda. Penyedia AlaraGo tidak memiliki akses ke spreadsheet tersebut.</p>
 
   <h2>2. Data yang melewati server penyedia (relay)</h2>
   <table>
@@ -51,10 +52,10 @@
   <p>PPR dapat mengekspor seluruh data kapan saja. Untuk menghapus akun dan seluruh data di relay, hubungi kontak di bawah. Data di Google Drive PPR tetap milik dan dikendalikan PPR, serta dapat dihapus langsung dari Drive. Akses aplikasi dapat dicabut di <a href="https://myaccount.google.com/permissions" rel="noopener">myaccount.google.com/permissions</a>.</p>
 
   <h2>6. Kontak</h2>
-  <p>JuniorLabs · <span id="kontak">[isi email kontak JuniorLabs]</span></p>
+  <p>JuniorLabs · <a id="kontak" href="mailto:juniorlabs.id@gmail.com">juniorlabs.id@gmail.com</a></p>
 
-  <p class="muted" style="margin-top:32px;font-size:13px">Penggunaan informasi yang diterima dari Google API oleh ProteRad mematuhi Google API Services User Data Policy, termasuk persyaratan Limited Use.</p>
-  <p><a href="./">← Kembali ke ProteRad</a></p>
+  <p class="muted" style="margin-top:32px;font-size:13px">Penggunaan informasi yang diterima dari Google API oleh AlaraGo mematuhi Google API Services User Data Policy, termasuk persyaratan Limited Use.</p>
+  <p><a href="./">← Kembali ke AlaraGo</a></p>
 </main>
 </body>
 </html>

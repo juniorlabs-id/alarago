@@ -1,4 +1,4 @@
-/* ProteRad — lapisan API: fetch ke GAS, cache lokal (instan), antrean tulis (optimistic + offline) */
+/* AlaraGo — lapisan API: fetch ke GAS, cache lokal (instan), antrean tulis (optimistic + offline) */
 (function (PR) {
   'use strict';
   const LS = {

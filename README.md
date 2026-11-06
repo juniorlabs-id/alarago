@@ -1,4 +1,4 @@
-# ProteRad — Protect. Record. Ready.
+# AlaraGo — Protect. Record. Ready.
 
 Aplikasi web progresif (PWA) untuk **Petugas Proteksi Radiasi** rumah sakit. Menu utamanya:
 

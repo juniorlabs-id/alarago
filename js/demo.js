@@ -1,4 +1,4 @@
-/* ProteRad — MODE DEMO: data contoh + backend tiruan di browser (tanpa server) */
+/* AlaraGo — MODE DEMO: data contoh + backend tiruan di browser (tanpa server) */
 (function (PR) {
   'use strict';
   const D = PR.demo = {};
@@ -27,7 +27,7 @@
     const alat = [['AL1', 'RU1', 'GE', 'Definium 646', 'Radiografi umum', 'XR4819', M(20), M(14)], ['AL2', 'RU2', 'Canon', 'Aquilion Prime SP', 'CT Scan', 'CT9201', M(12), A(24)],
       ['AL3', 'RU3', 'Hologic', 'Selenia Dimensions', 'Mammografi', 'MG3312', M(26), M(9)], ['AL4', 'RU4', 'Carestream', 'CS 9600', 'Dental panoramik', 'DN1029', M(30), M(5)],
       ['AL5', 'RU5', 'Siemens', 'Artis Zee', 'Fluoroskopi intervensional', 'AZ8491', M(21), M(10)], ['AL6', 'RU6', 'Philips', 'Zenition 70', 'C-Arm mobile', 'CA7721', M(18), A(-20)]];
-    alat.forEach(([id, ruangan_id, merek, tipe, jenis, no_seri, izin_sd, ukes_sd], i) => db.Alat.push({ id, ruangan_id, merek, tipe, jenis, no_seri, kv_ma: '150 kV · 500 mA', no_izin: `0${4812 + i * 113}/IZIN/202${2 + (i % 3)}`, izin_sd, izin_status: 'berlaku', ukes_no: `UK-${2025 + (i % 2)}-${710 + i}`, ukes_sd, ukes_status: id === 'AL6' ? 'dijadwalkan' : '', status_balis: 'terdaftar', status_operasi: 'aktif' }));
+    alat.forEach(([id, ruangan_id, merek, tipe, jenis, no_seri, izin_sd, ukes_sd], i) => db.Alat.push({ id, ruangan_id, merek, tipe, jenis, no_seri, kv_ma: '150 kV · 500 mA', no_izin: `0${4812 + i * 113}/Izin/202${2 + (i % 3)}`, izin_sd, izin_status: 'berlaku', ukes_no: `UK-${2025 + (i % 2)}-${710 + i}`, ukes_sd, ukes_status: id === 'AL6' ? 'dijadwalkan' : '', status_balis: 'terdaftar', status_operasi: 'aktif' }));
     db.Riwayat_Alat.push({ id: 'RW1', alat_id: 'AL6', tanggal: A(-53), jenis: 'Ganti tabung', pelaksana: 'Vendor', no_ba: 'BA-SERV-01', keterangan: 'Penggantian insert tabung sinar-X', memicu_survei: 'ya' },
       { id: 'RW2', alat_id: 'AL5', tanggal: A(-92), jenis: 'Perawatan berkala', pelaksana: 'Teknisi RS', keterangan: 'Kalibrasi monitor & pembersihan', memicu_survei: 'tidak' },
       { id: 'RW3', alat_id: 'AL2', tanggal: A(-300), jenis: 'Perbaikan generator', pelaksana: 'Vendor', keterangan: 'Ganti kapasitor', memicu_survei: 'ya' });

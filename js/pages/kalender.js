@@ -1,11 +1,11 @@
-/* ProteRad — W-03 Kalender Kepatuhan */
+/* AlaraGo — W-03 Kalender Kepatuhan */
 (function (PR) {
   'use strict';
   const U = PR.ui, L = PR.L, A = PR.api;
   const st = { m: null, cat: 'semua', sel: null, view: 'bulan' };
   PR.page('kalender', {
     title: 'Kalender Kepatuhan', roles: ['ppr', 'peninjau'],
-    crumb: () => `KALENDER KEPATUHAN / <b>${st.view === 'bulan' ? 'TAMPILAN BULANAN' : 'DAFTAR'}</b>`,
+    crumb: () => `Kalender kepatuhan / <b>${st.view === 'bulan' ? 'Tampilan bulanan' : 'Daftar'}</b>`,
     render: () => {
       const all = L.dueItems(), T = PR.today();
       if (!st.m) st.m = T.slice(0, 7);
@@ -17,10 +17,10 @@
       const byDay = PR.groupBy(items, i => i.due);
       const sel = st.sel && all.find(i => i.key === st.sel) || items.find(i => i.days >= 0) || items[0];
       const cls = i => i.status === 'selesai' ? 'done' : i.days <= 7 ? 'k' : i.days <= 30 ? 'w' : '';
-      const cal = `<div class="panel"><div class="panel-h"><div class="row"><button class="icon-btn" data-act="calMove" data-d="-1" aria-label="Bulan sebelumnya">${PR.ic('chevron-left')}</button><h2 style="min-width:180px;text-align:center">${PR.BULAN[mm - 1].toUpperCase()} ${yy}</h2><button class="icon-btn" data-act="calMove" data-d="1" aria-label="Bulan berikutnya">${PR.ic('chevron-right')}</button><button class="btn btn-s" data-act="calToday">Hari ini</button></div>
+      const cal = `<div class="panel"><div class="panel-h"><div class="row"><button class="icon-btn" data-act="calMove" data-d="-1" aria-label="Bulan sebelumnya">${PR.ic('chevron-left')}</button><h2 style="min-width:180px;text-align:center">${PR.BULAN[mm - 1]} ${yy}</h2><button class="icon-btn" data-act="calMove" data-d="1" aria-label="Bulan berikutnya">${PR.ic('chevron-right')}</button><button class="btn btn-s" data-act="calToday">Hari ini</button></div>
         <div class="legend" style="margin:0"><span><i style="background:var(--crit)"></i>≤ H-7</span><span><i style="background:var(--warn-b);border:1px dashed var(--warn)"></i>≤ H-30</span><span><i style="border:1px solid var(--line2)"></i>> H-30</span></div></div>
         <div class="cal">${['SEN', 'SEL', 'RAB', 'KAM', 'JUM', 'SAB', 'MIN'].map(d => `<div class="dh">${d}</div>`).join('')}
-        ${days.map(d => `<div class="d ${d.slice(0, 7) !== st.m ? 'out' : ''} ${d === T ? 'today' : ''} ${sel && sel.due === d ? 'sel' : ''}" data-act="calDay" data-d="${d}"><span class="dn">${+d.slice(8)}${d === T ? ' · <b>HARI INI</b>' : ''}</span>${(byDay[d] || []).slice(0, 3).map(i => `<span class="ev ${cls(i)}" title="${PR.esc(i.title)}">${PR.esc(i.title)}</span>`).join('')}${(byDay[d] || []).length > 3 ? `<span class="tiny muted">+${byDay[d].length - 3}</span>` : ''}</div>`).join('')}</div></div>`;
+        ${days.map(d => `<div class="d ${d.slice(0, 7) !== st.m ? 'out' : ''} ${d === T ? 'today' : ''} ${sel && sel.due === d ? 'sel' : ''}" data-act="calDay" data-d="${d}"><span class="dn">${+d.slice(8)}${d === T ? ' · <b>Hari ini</b>' : ''}</span>${(byDay[d] || []).slice(0, 3).map(i => `<span class="ev ${cls(i)}" title="${PR.esc(i.title)}">${PR.esc(i.title)}</span>`).join('')}${(byDay[d] || []).length > 3 ? `<span class="tiny muted">+${byDay[d].length - 3}</span>` : ''}</div>`).join('')}</div></div>`;
       const list = `<div class="panel">${U.table([
         { h: 'Jatuh tempo', v: i => `<span class="num">${PR.d(i.due)}</span>` }, { h: 'Item', v: i => `<b>${PR.esc(i.title)}</b><span class="sub">${PR.esc(i.obj || '')}</span>` },
         { h: 'Kategori', v: i => PR.tag((L.CATS.find(c => c[0] === i.cat) || [])[1] || i.cat, 'netral', 1) }, { h: 'Status', v: i => i.status ? PR.tag(i.status, i.status === 'selesai' ? 'aman' : 'netral', 1) : '' }, { h: 'Sisa', v: i => PR.dueTag(i.days) },
@@ -33,7 +33,7 @@
           <div class="stack mt" style="gap:8px"><button class="btn btn-y btn-b" data-act="calMark" data-s="dijadwalkan">${PR.ic('calendar-check')}Sudah dijadwalkan</button><button class="btn btn-b" data-act="calDone">${PR.ic('file-up')}Selesai — perbarui data</button>
           <button class="btn btn-g" data-act="calWA">${PR.ic('message-circle')}Kirim pengingat via WhatsApp</button></div>` : ''}
         </div></div>` : `<div class="panel">${U.empty('Pilih tanggal atau item untuk melihat detail.')}</div>`;
-      return `${U.head('KALENDER KEPATUHAN & JATUH TEMPO', 'Semua jadwal izin, uji kesesuaian, kalibrasi, TLD, MCU, dokumen, laporan, dan temuan LHI dalam satu tampilan.',
+      return `${U.head('Kalender kepatuhan & jatuh tempo', 'Semua jadwal izin, uji kesesuaian, kalibrasi, TLD, MCU, dokumen, laporan, dan temuan LHI dalam satu tampilan.',
         `<span class="seg"><button class="${st.view === 'bulan' ? 'on' : ''}" data-act="calView" data-v="bulan">Bulan</button><button class="${st.view === 'daftar' ? 'on' : ''}" data-act="calView" data-v="daftar">Daftar</button></span>${U.btn('Sinkron Google Kalender', 'calSync', 'refresh-cw')}`)}
         <div class="chips mb">${[['semua', 'Semua']].concat(L.CATS).map(([k, l]) => `<button class="chip ${st.cat === k ? 'on' : ''}" data-act="calCat" data-k="${k}">${l}<span class="n">${cnt(k)}</span></button>`).join('')}</div>
         <div class="grid g-8-4"><div>${st.view === 'bulan' ? cal : list}</div><div>${det}</div></div>
@@ -49,6 +49,6 @@
   const cur = () => L.dueItems().find(i => i.key === st.sel) || L.dueItems().filter(i => st.cat === 'semua' || i.cat === st.cat).find(i => i.days >= 0);
   PR.acts.calMark = el => { const i = cur(); if (!i) return; A.save('Jadwal', { id: i.key, status: el.dataset.s, catatan: (PR.$('#calNote') || {}).value || '', diubah: new Date().toISOString() }); st.sel = i.key; PR.toast('Ditandai ' + el.dataset.s + ' — pengingat item ini berhenti', 'ok'); PR.render(); };
   PR.acts.calDone = () => { const i = cur(); if (!i) return; A.save('Jadwal', { id: i.key, status: 'selesai', catatan: (PR.$('#calNote') || {}).value || '', diubah: new Date().toISOString() }); PR.toast('Ditandai selesai. Perbarui tanggal berlaku pada datanya agar jatuh tempo berikutnya terhitung.', 'ok'); PR.go(i.route); };
-  PR.acts.calWA = () => { const i = cur(); if (i) PR.wa(`[ProteRad] Pengingat: ${i.title} — jatuh tempo ${PR.d(i.due)} (${PR.hcount(i.days)}). ${i.obj || ''}`); };
+  PR.acts.calWA = () => { const i = cur(); if (i) PR.wa(`[AlaraGo] Pengingat: ${i.title} — jatuh tempo ${PR.d(i.due)} (${PR.hcount(i.days)}). ${i.obj || ''}`); };
   PR.acts.calSync = async el => { el.disabled = true; try { await A.flush(); const d = await A.call('syncCalendar', {}); PR.toast(`Google Kalender diperbarui: ${d.created} acara baru${d.removed ? ', ' + d.removed + ' dihapus' : ''}`, 'ok'); await A.boot(true); PR.render(); } catch (e) { PR.toast(e.message, 'err'); } el.disabled = false; };
 })(window.PR);

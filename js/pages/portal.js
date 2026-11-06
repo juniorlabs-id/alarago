@@ -1,9 +1,9 @@
-/* ProteRad — W-19..W-22 Portal pekerja (mobile-first) */
+/* AlaraGo — W-19..W-22 Portal pekerja (mobile-first) */
 (function (PR) {
   'use strict';
   const U = PR.ui, L = PR.L, A = PR.api;
   const me = () => L.tb('Pekerja')[0] || {};
-  const shell = (tab, inner) => `<div class="ptop">${PR.logo()}<div class="grow"><b style="font:700 16px var(--fh);letter-spacing:.04em">PROTERAD</b> <span class="tag" style="background:#1F1F1F;color:#C9CDD3;border-color:#333">PORTAL PEKERJA</span></div>${PR.api.isDemo() ? `<button class="btn btn-s btn-y" data-act="demoRole" data-r="ppr">Kembali ke PPR</button>` : ''}<span class="avatar">${PR.esc(PR.initials(me().nama))}</span></div>
+  const shell = (tab, inner) => `<div class="ptop">${PR.logo()}<div class="grow"><b style="font:700 16px var(--fh)">AlaraGo</b> <span class="tag t-y">Portal pekerja</span></div>${PR.api.isDemo() ? `<button class="btn btn-s btn-y" data-act="demoRole" data-r="ppr">Kembali ke PPR</button>` : ''}<span class="avatar">${PR.esc(PR.initials(me().nama))}</span></div>
     <div class="portal">${inner}</div>
     <nav class="bnav" style="display:flex">${[['', 'Dosis', 'id-card'], ['survei', 'Survei', 'radar'], ['sop', 'SOP', 'book-open'], ['profil', 'Profil', 'user']].map(([k, l, i]) => `<a href="#/saya${k ? '/' + k : ''}" class="${tab === k ? 'on' : ''}">${PR.ic(i)}${l}${k === 'sop' && unread().length ? `<span class="bdg">${unread().length}</span>` : ''}</a>`).join('')}</nav>`;
   const sops = () => L.tb('Dokumen').filter(d => d.kategori === 'SOP');
@@ -14,16 +14,16 @@
   function dosis() {
     const w = me(), yr = PR.year(), s = L.doseStatus(w, yr), lp = L.tb('Dosis').slice().sort((a, b) => (b.tahun + b.periode).localeCompare(a.tahun + a.periode))[0];
     const dc = s.dc, ref = dc || L.NBD().pekerja_rata5;
-    const q = [1, 2, 3, 4].map(i => ({ l: 'TW' + i, v: s.q[i] ? PR.n(s.q[i].hp10) : null, c: lp && +lp.tahun === yr && lp.periode === 'TW' + i ? '#FFC21A' : '#5B616B', hl: lp && +lp.tahun === yr && lp.periode === 'TW' + i }));
+    const q = [1, 2, 3, 4].map(i => ({ l: 'TW' + i, v: s.q[i] ? PR.n(s.q[i].hp10) : null, c: lp && +lp.tahun === yr && lp.periode === 'TW' + i ? '#F0B33E' : '#CFCDC6', hl: lp && +lp.tahun === yr && lp.periode === 'TW' + i }));
     const inv = L.tb('Investigasi').find(x => +x.tahun === yr);
-    return `<div class="card"><div class="spread"><div><b style="font-size:17px">${PR.esc(w.nama)}</b><div class="small muted">${PR.esc(w.profesi)}</div></div><span class="tag">AKTIF</span></div><div class="row mt8 small mono"><span>NPR ${PR.esc(w.npr || '—')}</span></div></div>
+    return `<div class="card"><div class="spread"><div><b style="font-size:17px">${PR.esc(w.nama)}</b><div class="small muted">${PR.esc(w.profesi)}</div></div><span class="tag">Aktif</span></div><div class="row mt8 small mono"><span>NPR ${PR.esc(w.npr || '—')}</span></div></div>
       <div class="card"><div class="spread"><span class="eyebrow">Status dosis tahunan ${yr}</span>${L.doseTag(s.status)}</div>
         <div class="statement mt8">Anda menerima ${PR.pct(s.sum / ref)} dari ${dc ? 'pembatas dosis' : 'nilai batas dosis'} tahunan</div>
         <p class="small muted" style="margin:6px 0 12px">${s.status === 'aman' ? 'Dosis Anda tahun ini jauh di bawah batas.' : s.status === 'tinjau' ? 'Mendekati pembatas dosis — PPR akan meninjau penugasan bila perlu.' : 'Di atas pembatas dosis — PPR sedang menganalisis penyebabnya. Ini bukan pelanggaran.'}</p>
         <div class="spread tiny mono muted"><span>0 mSv</span>${dc ? `<span>DC ${PR.f(dc)} mSv</span>` : ''}<span>NBD ${L.NBD().pekerja_rata5} mSv</span></div>
         <div class="bar mt8" style="height:10px"><i style="width:${Math.min(100, s.sum / L.NBD().pekerja_rata5 * 100)}%"></i>${dc ? `<span style="position:absolute;left:${dc / L.NBD().pekerja_rata5 * 100}%;top:-4px;bottom:-4px;width:2px;background:var(--y-h)"></span>` : ''}</div>
         <p class="small mono" style="margin:8px 0 0">Total ${yr}: <b>${PR.f(s.sum)} mSv</b>${w.kategori === 'intervensional' ? ` · Lensa Hp(3): <b>${PR.f(s.lens)} mSv</b>` : ''}</p></div>
-      <div class="card"><div class="spread"><span class="eyebrow">Dosis per triwulan Hp(10)</span><span class="tag">mSv</span></div>${L.barChart(q, { h: 180, w: 420, lines: [{ v: ref / 4, c: '#121212', label: 'DC/TW ' + PR.f(ref / 4) }], label: 'Dosis per triwulan' })}</div>
+      <div class="card"><div class="spread"><span class="eyebrow">Dosis per triwulan Hp(10)</span><span class="tag">mSv</span></div>${L.barChart(q, { h: 180, w: 420, lines: [{ v: ref / 4, c: '#2A2A2E', label: 'DC/TW ' + PR.f(ref / 4) }], label: 'Dosis per triwulan' })}</div>
       ${inv ? `<div class="card" style="background:var(--sub)"><div class="eyebrow">${PR.ic('info', 'ic-s')} Catatan investigasi</div><p class="small" style="margin:6px 0 0">${PR.esc(inv.rencana || inv.akar_penyebab || 'Sedang dianalisis PPR.')}</p></div>` : ''}
       <div class="card"><div class="spread"><span class="eyebrow">Akumulasi 5 tahun (${yr - 4}–${yr})</span></div><div style="font:700 30px var(--fm);margin-top:6px">${PR.f(s.five)} <span style="font-size:14px">mSv</span></div><div class="bar mt8"><i style="width:${Math.min(100, s.five / L.NBD().pekerja_5tahun * 100)}%"></i></div><div class="spread tiny mono mt8"><span>${PR.pct(s.five / L.NBD().pekerja_5tahun)} dari ${L.NBD().pekerja_5tahun} mSv</span><span>rata-rata ${PR.f(s.five / 5)} mSv/thn</span></div></div>
       ${lp ? `<div class="card"><div class="eyebrow">Konfirmasi hasil ${lp.periode} ${lp.tahun}</div><p class="small" style="margin:6px 0 12px">Tandai bahwa Anda sudah melihat hasil dosis periode ini. Hp(10): <b class="mono">${PR.f(PR.n(lp.hp10))} mSv</b></p>
@@ -58,7 +58,7 @@
   function kartu() {
     const w = me(), ys = []; for (let y = PR.year() - 4; y <= PR.year(); y++) ys.push(y);
     return `<div class="no-print row mb"><a class="btn" href="#/saya">${PR.ic('arrow-left')}Kembali</a><button class="btn btn-y" data-act="print">${PR.ic('printer')}Cetak / simpan PDF</button></div>
-      <div class="doc-sheet" style="padding:20px"><h1 style="font-size:18px">KARTU DOSIS PEKERJA RADIASI</h1><p class="center small">${PR.esc((L.rs() || {}).nama || '')}</p>
+      <div class="doc-sheet" style="padding:20px"><h1 style="font-size:18px">Kartu dosis pekerja radiasi</h1><p class="center small">${PR.esc((L.rs() || {}).nama || '')}</p>
       <div class="kv2 mt"><div><small>Nama</small>${PR.esc(w.nama)}</div><div><small>NPR</small>${PR.esc(w.npr)}</div><div><small>Profesi</small>${PR.esc(w.profesi)}</div><div><small>Dicetak</small>${PR.d(PR.today())}</div></div>
       ${U.table([{ h: 'Tahun', v: y => y }, ...[1, 2, 3, 4].map(q => ({ h: 'TW' + q, r: 1, v: y => (r => r ? PR.f(PR.n(r.hp10)) : '—')(L.quarters(w.id, y)[q]) })), { h: 'Total', r: 1, v: y => `<b>${PR.f(L.annual(w.id, y))}</b>` }], ys)}
       <p class="small">Satuan mSv, Hp(10). Akumulasi 5 tahun: <b>${PR.f(L.five(w.id))} mSv</b>.</p></div>`;

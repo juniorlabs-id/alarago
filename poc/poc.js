@@ -1,4 +1,4 @@
-/* ProteRad — UJI COBA arsitektur baru:
+/* AlaraGo — UJI COBA arsitektur baru:
    aplikasi ↔ Google Sheets/Drive milik PPR (izin drive.file, tanpa Apps Script di akun PPR)
    + relay milik penjual (paket terenkripsi, jadwal jatuh tempo, rekap bulanan). */
 (function (PR) {
@@ -45,11 +45,11 @@
   const TABS = { Pekerja: ['id', 'nama', 'npr', 'profesi'], Dosis: ['id', 'pekerja_id', 'tahun', 'periode', 'hp10', 'dibaca_pada'], Kredensial: ['id', 'paket', 'kunci', 'dibuat'], Pengaturan: ['id', 'nilai'] };
   const DRV = 'https://www.googleapis.com/drive/v3/files', SHT = 'https://sheets.googleapis.com/v4/spreadsheets';
   async function cariAtauBuatDb() {
-    const q = encodeURIComponent("appProperties has { key='proterad' and value='db' } and trashed=false");
+    const q = encodeURIComponent("appProperties has { key='alarago' and value='db' } and trashed=false");
     const found = await timed('Cari database di Drive', () => gj(`${DRV}?q=${q}&fields=files(id,name,modifiedTime)&spaces=drive`));
     if (found.files && found.files.length) { st.db = found.files[0].id; LS.set('poc_db', st.db); log('Database ditemukan: ' + found.files[0].name); return; }
-    const folder = await timed('Buat folder ProteRad', () => gj(DRV, 'POST', { name: 'ProteRad', mimeType: 'application/vnd.google-apps.folder', appProperties: { proterad: 'folder' } }));
-    const ss = await timed('Buat spreadsheet database', () => gj(DRV, 'POST', { name: 'ProteRad — Database', mimeType: 'application/vnd.google-apps.spreadsheet', parents: [folder.id], appProperties: { proterad: 'db', folder: folder.id } }));
+    const folder = await timed('Buat folder AlaraGo', () => gj(DRV, 'POST', { name: 'AlaraGo', mimeType: 'application/vnd.google-apps.folder', appProperties: { alarago: 'folder' } }));
+    const ss = await timed('Buat spreadsheet database', () => gj(DRV, 'POST', { name: 'AlaraGo — Database', mimeType: 'application/vnd.google-apps.spreadsheet', parents: [folder.id], appProperties: { alarago: 'db', folder: folder.id } }));
     const names = Object.keys(TABS);
     await timed('Siapkan tab tabel', () => gj(`${SHT}/${ss.id}:batchUpdate`, 'POST', { requests: [{ updateSheetProperties: { properties: { sheetId: 0, title: names[0] }, fields: 'title' } }].concat(names.slice(1).map(n => ({ addSheet: { properties: { title: n } } }))) }));
     await timed('Tulis judul kolom', () => gj(`${SHT}/${ss.id}/values:batchUpdate`, 'POST', { valueInputOption: 'RAW', data: names.map(n => ({ range: `${n}!A1`, values: [TABS[n]] })) }));
@@ -115,13 +115,13 @@
   function renderPPR() {
     const c = set(), a = aturan(), items = st.items || (st.items = contohItems()), W = st.data.Pekerja || [], D = st.data.Dosis || [], K = st.data.Kredensial || [];
     $('#root').innerHTML = `<div class="hazard"></div><div class="poc">
-      <div class="spread"><div class="row">${PR.logo()}<div><div class="eyebrow">UJI COBA ARSITEKTUR BARU</div><h1 style="margin:4px 0 0">PROTERAD TANPA BACKEND DI AKUN PPR</h1></div></div><a class="btn" href="../">${PR.ic('arrow-left')}Aplikasi utama</a></div>
+      <div class="spread"><div class="row">${PR.logo()}<div><div class="eyebrow">Uji coba arsitektur baru</div><h1 style="margin:4px 0 0">AlaraGo tanpa backend di akun PPR</h1></div></div><a class="btn" href="../">${PR.ic('arrow-left')}Aplikasi utama</a></div>
       <p class="muted">Halaman ini menguji: login Google (izin <span class="mono">drive.file</span>), database langsung di Drive milik Anda, relay terenkripsi untuk pekerja, dan pengingat yang diatur sendiri. Setiap langkah mencatat waktunya di panel log.</p>
 
       ${card(0, 'Pengaturan uji coba', `<div class="fgrid"><div class="f"><label>Google OAuth Client ID</label><input class="inp mono" id="cid" value="${esc(c.cid)}" placeholder="…apps.googleusercontent.com"></div><div class="f"><label>URL relay (/exec)</label><input class="inp mono" id="rurl" value="${esc(c.relay)}" placeholder="https://script.google.com/macros/s/…/exec"></div></div><button class="btn btn-s mt8" data-a="simpanCfg">Simpan</button>`, c.cid && c.relay)}
 
       ${card(1, 'Masuk dengan Google', `<div class="row"><button class="btn btn-y" data-a="masuk">${PR.ic('user')}${st.tok ? 'Masuk ulang' : 'Masuk dengan Google'}</button><span class="small mono" id="tokInfo"></span>${st.email ? `<span class="tag t-aman">${esc(st.email)}</span>` : ''}</div>
-        <p class="small muted">Izin yang diminta hanya: email & berkas yang dibuat ProteRad di Drive Anda. Perhatikan: apakah muncul layar "aplikasi belum diverifikasi"?</p>
+        <p class="small muted">Izin yang diminta hanya: email & berkas yang dibuat AlaraGo di Drive Anda. Perhatikan: apakah muncul layar "aplikasi belum diverifikasi"?</p>
         <button class="btn btn-s" data-a="segarkan">Uji segarkan token tanpa klik login</button>`, !!st.email)}
 
       ${card(2, 'Database di Google Drive Anda', `<div class="row"><button class="btn" data-a="db">${PR.ic('folder-open')}Cari / buat database</button>${st.db ? `<a class="btn btn-s" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/${esc(st.db)}">Buka spreadsheet ↗</a>` : ''}</div>
@@ -164,7 +164,7 @@
   A.massal = async () => { const rows = []; for (let i = 0; i < 200; i++) rows.push({ id: 'M' + i, pekerja_id: 'UJI-MASSAL', tahun: '2020', periode: 'TW' + (i % 4 + 1), hp10: '0.10', dibaca_pada: '' }); await simpan('Dosis', rows); renderPPR(); };
   async function unggah(file) {
     if (!file) return;
-    const folder = LS.get('poc_folder', null), meta = { name: file.name, parents: folder ? [folder] : undefined, appProperties: { proterad: 'berkas' } }, b = 'prb' + Date.now();
+    const folder = LS.get('poc_folder', null), meta = { name: file.name, parents: folder ? [folder] : undefined, appProperties: { alarago: 'berkas' } }, b = 'prb' + Date.now();
     const body = new Blob([`--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n--${b}\r\nContent-Type: ${file.type || 'application/octet-stream'}\r\n\r\n`, file, `\r\n--${b}--`]);
     const f = await timed(`Unggah ${file.name} (${Math.round(file.size / 1024)} KB)`, () => g('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,size', { method: 'POST', headers: { 'Content-Type': 'multipart/related; boundary=' + b }, body }));
     const blob = await timed('Unduh kembali berkas', () => g(`${DRV}/${f.id}?alt=media`));
@@ -222,7 +222,7 @@
   const WK = 'poc_pekerja';
   async function renderPekerja(q) {
     const root = $('#root');
-    const shell = inner => `<div class="hazard"></div><div class="wk"><div class="row mb">${PR.logo()}<b style="font:700 18px var(--fh)">PROTERAD</b><span class="tag">PORTAL PEKERJA · UJI COBA</span></div>${inner}</div>`;
+    const shell = inner => `<div class="hazard"></div><div class="wk"><div class="row mb">${PR.logo()}<b style="font:700 18px var(--fh)">AlaraGo</b><span class="tag">Portal pekerja · uji coba</span></div>${inner}</div>`;
     if (q.p && q.k) {   // baru memindai QR → buat PIN, simpan kunci terkunci PIN di perangkat
       history.replaceState(null, '', location.pathname + '#/w');
       root.innerHTML = shell(`<div class="panel"><div class="panel-b"><h2 style="margin-top:0">Buat PIN 6 digit</h2><p class="small muted">PIN mengunci akses di perangkat ini. Lupa PIN? Minta QR baru ke PPR.</p><input class="inp mono" id="pin1" type="password" inputmode="numeric" maxlength="6" placeholder="••••••" style="font-size:24px;height:54px;letter-spacing:.4em"><input class="inp mono mt8" id="pin2" type="password" inputmode="numeric" maxlength="6" placeholder="ulangi" style="font-size:24px;height:54px;letter-spacing:.4em"><button class="btn btn-y btn-b mt" id="go">Simpan PIN & buka</button></div></div>`);

@@ -1,11 +1,11 @@
-/* ProteRad — W-10 Survei tabel, W-11 Denah (Pro), W-12 Input titik lapangan */
+/* AlaraGo — W-10 Survei tabel, W-11 Denah (Pro), W-12 Input titik lapangan */
 (function (PR) {
   'use strict';
   const U = PR.ui, L = PR.L, A = PR.api;
   const st = { yr: null, room: '', denah: null, wave: true, heat: false, sel: null, mode: '', surv: '' };
   const POS = [['operator', 'Posisi operator'], ['pintu', 'Balik pintu'], ['sekitar', 'Sekitar ruangan / koridor'], ['lain', 'Titik lain']];
-  const meterOpts = () => L.tb('Alat_Ukur').map(m => [m.id, `${m.merek} ${m.tipe} · SN ${m.no_seri}${L.meterOk(m) ? '' : ' (KALIBRASI KEDALUWARSA)'}`]);
-  const val = t => String(t.terkoreksi).toUpperCase() === 'BG' ? '<span class="tag">[BG]</span>' : PR.has(t.terkoreksi) ? PR.f(PR.n(t.terkoreksi)) : '—';
+  const meterOpts = () => L.tb('Alat_Ukur').map(m => [m.id, `${m.merek} ${m.tipe} · SN ${m.no_seri}${L.meterOk(m) ? '' : ' (Kalibrasi kedaluwarsa)'}`]);
+  const val = t => String(t.terkoreksi).toUpperCase() === 'BG' ? '<span class="tag">BG</span>' : PR.has(t.terkoreksi) ? PR.f(PR.n(t.terkoreksi)) : '—';
 
   PR.acts.newSurvey = async el => {
     if (!L.tb('Alat').length) return PR.toast('Tambahkan alat di Inventaris lebih dulu', 'warn');
@@ -46,7 +46,7 @@
 
   const latestFor = a => { const yr = st.yr; return L.tb('Survei').filter(s => s.alat_id === a.id && (!yr || s.tanggal.slice(0, 4) === String(yr))).sort((x, y) => y.tanggal.localeCompare(x.tanggal))[0]; };
   const posVal = (sv, p) => { const t = L.titikOf(sv.id).filter(x => x.posisi === p); if (!t.length) return '—'; const w = t.reduce((m, x) => PR.n(x.terkoreksi) > PR.n(m.terkoreksi) ? x : m, t[0]); const s = L.titikStatus(w).status; return `<span style="color:${s === 'kritis' ? 'var(--crit)' : s === 'tinjau' ? 'var(--warn)' : 'inherit'}">${val(w)}</span>`; };
-  const head = mode => U.head('SURVEI PAPARAN RADIASI', 'Pemantauan laju dosis daerah kerja berkala dan setelah perbaikan alat / renovasi (Perba 4/2020 Ps. 32), dalam format LHI bagian 6.',
+  const head = mode => U.head('Survei paparan radiasi', 'Pemantauan laju dosis daerah kerja berkala dan setelah perbaikan alat / renovasi (Perba 4/2020 Ps. 32), dalam format LHI bagian 6.',
     `<span class="seg"><button class="${mode === 'tabel' ? 'on' : ''}" data-go="#/survei">${PR.ic('list', 'ic-s')} Tabel</button><button class="${mode === 'denah' ? 'on' : ''}" data-go="#/survei/denah">${PR.ic('map', 'ic-s')} Denah <span class="tag t-y" style="padding:0 4px">PRO</span></button></span><a class="btn" href="#/cetak/survei">${PR.ic('download')}Ekspor format LHI</a>${U.btn('Catat survei baru', 'newSurvey', 'plus', 'btn-d')}`);
 
   function table() {
@@ -61,7 +61,7 @@
         ${U.tile(m ? PR.dueTag(PR.left(m.kal_sd)) : PR.tag('belum ada', 'kritis'), `<span style="font-size:20px">${m ? PR.esc(m.merek + ' ' + m.tipe) : '—'}</span>`, 'Surveimeter aktif', m ? `SN ${PR.esc(m.no_seri)} · FK ${PR.f(PR.n(m.fk), 3)}` : '')}</div>
       <div class="filters"><select class="inp" data-sf="room"><option value="">Semua ruangan</option>${L.tb('Ruangan').map(r => `<option value="${r.id}" ${st.room === r.id ? 'selected' : ''}>${PR.esc(r.nama)}</option>`).join('')}</select>
         <select class="inp" data-sf="yr"><option value="">Survei terbaru</option>${years.map(y => `<option ${String(st.yr) === String(y) ? 'selected' : ''}>${y}</option>`).join('')}</select></div>
-      <div class="panel"><div class="panel-h"><h3>${PR.ic('file-text')} Lembar data survei per alat & ruangan (format LHI bagian 6)</h3><span class="mono tiny muted">NILAI TERKOREKSI µSv/jam</span></div>
+      <div class="panel"><div class="panel-h"><h3>${PR.ic('file-text')} Lembar data survei per alat & ruangan (format LHI bagian 6)</h3><span class="mono tiny muted">Nilai terkoreksi µSv/jam</span></div>
       ${U.table([{ h: 'No', v: (x, i) => String(i + 1).padStart(2, '0') },
         { h: 'Alat radiasi', v: x => `<b>${PR.esc(L.alatName(x.a))}</b><span class="sub mono">SN ${PR.esc(x.a.no_seri || '—')} · ${PR.esc(x.a.jenis || '')}</span>` },
         { h: 'Ruangan & area', v: x => `${PR.esc(L.ruangName(x.a.ruangan_id))}<span class="sub">${PR.tag((L.get('Ruangan', x.a.ruangan_id) || {}).klasifikasi || '—', 'netral', 1)}</span>` },
@@ -73,8 +73,8 @@
         alat.map(a => ({ a, sv: latestFor(a), need: L.needResurvey(a) })), { rowAttr: x => x.need ? 'class="critrow"' : '', empty: 'Belum ada alat.', foot: '<span>BG = setara background · nilai = (bacaan − background) × faktor kalibrasi</span>' })}</div>
       <div class="grid g2 mt">
         <div class="panel"><div class="panel-h"><h3>Σ Rumus laju dosis terkoreksi</h3></div><div class="panel-b"><div class="panel-dark mono" style="padding:12px 14px;border-left:4px solid var(--y)"><span style="color:var(--y)">Laju dosis terkoreksi</span> = (Bacaan mentah − Background) × FK</div>
-          <p class="small">FK diambil otomatis dari sertifikat kalibrasi surveimeter di Inventaris. Bacaan setara background ditulis <span class="tag">[BG]</span>. Surveimeter yang kalibrasinya kedaluwarsa tidak dapat dipilih tanpa catatan.</p></div></div>
-        <div class="panel"><div class="panel-h"><h3>${PR.ic('gauge')} Batas laju dosis RS</h3><span class="tag">PENGATURAN PPR</span></div><div class="panel-b" style="padding-top:4px;padding-bottom:4px">
+          <p class="small">FK diambil otomatis dari sertifikat kalibrasi surveimeter di Inventaris. Bacaan setara background ditulis <span class="tag">BG</span>. Surveimeter yang kalibrasinya kedaluwarsa tidak dapat dipilih tanpa catatan.</p></div></div>
+        <div class="panel"><div class="panel-h"><h3>${PR.ic('gauge')} Batas laju dosis RS</h3><span class="tag">Pengaturan PPR</span></div><div class="panel-b" style="padding-top:4px;padding-bottom:4px">
           ${[['pengendalian', 'Daerah pengendalian'], ['supervisi', 'Daerah supervisi'], ['umum', 'Area umum']].map(([k, l]) => `<div class="list-row"><div class="grow"><b>${l}</b><span>Ditetapkan dari kajian keselamatan RS</span></div><span class="num"><b>${L.batas(k) != null ? '≤ ' + PR.f(L.batas(k)) : '—'}</b> µSv/jam</span>${PR.can('edit') ? '<a class="small" href="#/pengaturan/regulasi">ubah ↗</a>' : ''}</div>`).join('')}
           <p class="small muted">Regulasi tidak menetapkan angka µSv/jam baku; batas ini ditetapkan pemegang izin.</p></div></div></div>`;
   }
@@ -101,7 +101,7 @@
         <span style="flex:1"></span><button class="btn btn-s" data-act="dnFull">${PR.ic('maximize')}Mode presentasi</button><a class="btn btn-s btn-y" href="#/cetak/denah/${dn.id}?y=${yr || ''}">${PR.ic('printer')}Laporan PDF</a>${U.btn('Denah baru', 'addDenah', 'plus', 'btn-s')}</div>
       ${PR.can('edit') ? `<div class="row mb"><span class="seg"><button class="${!st.mode ? 'on' : ''}" data-act="dnMode" data-m="">${PR.ic('eye', 'ic-s')} Lihat</button><button class="${st.mode === 'titik' ? 'on' : ''}" data-act="dnMode" data-m="titik">${PR.ic('plus', 'ic-s')} Tambah titik</button><button class="${st.mode === 'sumber' ? 'on' : ''}" data-act="dnMode" data-m="sumber">${PR.ic('radiation', 'ic-s')} Tambah sumber</button></span>
         ${st.mode === 'titik' ? `<select class="inp" style="width:auto" id="dnSurv"><option value="">— survei untuk titik baru —</option>${svOpts.map(([i, l]) => `<option value="${i}" ${st.surv === i ? 'selected' : ''}>${PR.esc(l)}</option>`).join('')}</select><span class="small muted">Ketuk denah untuk menaruh titik.</span>` : st.mode === 'sumber' ? '<span class="small muted">Ketuk denah untuk menaruh sumber (tabung / gantry). Ketuk sumber untuk menghapus.</span>' : ''}</div>` : ''}
-      <div class="grid g-8-4"><div class="panel"><div class="panel-h"><h3><span class="dotc" style="background:var(--y);border-radius:0"></span>${PR.esc(dn.nama)}</h3><span class="mono tiny muted">${vis.length} TITIK · ${src.length} SUMBER${dn.skala_m ? ' · LEBAR ±' + dn.skala_m + ' m' : ''}</span></div>
+      <div class="grid g-8-4"><div class="panel"><div class="panel-h"><h3><span class="dotc" style="background:var(--y);border-radius:0"></span>${PR.esc(dn.nama)}</h3><span class="mono tiny muted">${vis.length} Titik · ${src.length} Sumber${dn.skala_m ? ' · Lebar ±' + dn.skala_m + ' m' : ''}</span></div>
         <div class="panel-b"><div class="plan ${dn.file_id ? '' : 'blank'} ${st.mode ? 'adding' : ''}" id="plan">${dn.file_id ? '<img id="planImg" alt="Denah">' : ''}<canvas id="heat" ${st.heat ? '' : 'hidden'}></canvas>
           ${st.wave ? src.map(s => [0, 1, 2].map(k => `<span class="ring" style="left:${s.x}%;top:${s.y}%;animation-delay:${k}s"></span>`).join('')).join('') : ''}
           ${src.map((s, i) => `<span class="src" style="left:${s.x}%;top:${s.y}%" title="${PR.esc(s.l || 'Sumber')}" data-src="${i}">${PR.trefoil}</span>`).join('')}
@@ -125,14 +125,14 @@
   function surveyDetail(id) {
     const sv = L.get('Survei', id); if (!sv) return U.empty('Survei tidak ditemukan.');
     const a = L.get('Alat', sv.alat_id) || {}, m = L.get('Alat_Ukur', sv.alat_ukur_id) || {}, pts = L.titikOf(id).sort((x, y) => x.kode.localeCompare(y.kode, undefined, { numeric: true }));
-    return `<div class="page-head"><div><div class="eyebrow"><a href="#/survei">SURVEI PAPARAN</a> / INPUT TITIK</div><h1 style="margin-top:6px">${PR.esc(L.alatName(a))}</h1><p>${PR.esc(L.ruangName(a.ruangan_id))} · ${PR.d(sv.tanggal)} · ${PR.esc(sv.petugas || '')}</p></div>
+    return `<div class="page-head"><div><div class="eyebrow"><a href="#/survei">Survei paparan</a> / Input titik</div><h1 style="margin-top:6px">${PR.esc(L.alatName(a))}</h1><p>${PR.esc(L.ruangName(a.ruangan_id))} · ${PR.d(sv.tanggal)} · ${PR.esc(sv.petugas || '')}</p></div>
       <div class="actions">${U.btn('Ubah data survei', 'newSurvey', 'pencil', '', `data-id="${id}"`)}${U.btn('Tambah titik', 'editTitik', 'plus', 'btn-y', `data-sv="${id}"`)}</div></div>
       ${!navigator.onLine ? `<div class="ban ban-warn">${PR.ic('wifi-off')}<div class="grow small">Offline — data titik tersimpan di perangkat dan tersinkron otomatis saat online.</div></div>` : ''}
       <div class="ban ${L.meterOk(m, sv.tanggal) ? 'ban-info' : 'ban-crit'}">${PR.ic(L.meterOk(m, sv.tanggal) ? 'circle-check' : 'triangle-alert')}<div class="grow"><b style="font-size:14px">${PR.esc((m.merek || '') + ' ' + (m.tipe || ''))} · SN ${PR.esc(m.no_seri || '—')}</b><p>Kalibrasi berlaku s.d. ${PR.d(m.kal_sd)} ${PR.dueTag(PR.left(m.kal_sd))} · FK ${PR.f(PR.n(sv.fk), 3)} diterapkan otomatis · BG ${PR.esc(sv.bg || '—')} µSv/jam${sv.catatan ? ' · ' + PR.esc(sv.catatan) : ''}</p></div></div>
       <div class="stack">${pts.map(t => { const s = L.titikStatus(t);
         return `<div class="panel"><div class="panel-b"><div class="spread"><div><span class="tag t-ink">${PR.esc(t.kode)}</span> <b>${PR.esc(t.lokasi)}</b><div class="small muted mt8">${PR.esc((POS.find(p => p[0] === t.posisi) || [])[1] || '')} · ${PR.esc(t.klasifikasi)}</div></div>${L.titikTag(s.status)}</div>
           ${PR.can('edit') ? `<div class="grid g3 mt" style="gap:10px;align-items:end"><div class="f"><label>Bacaan mentah</label><input class="inp mono" style="height:48px;font-size:18px" value="${PR.esc(t.mentah)}" inputmode="decimal" data-tin="${t.id}" data-k="mentah" placeholder="0,00 atau BG"></div><div class="f"><label>Background</label><input class="inp mono" style="height:48px;font-size:18px" value="${PR.esc(t.bg || sv.bg || '')}" inputmode="decimal" data-tin="${t.id}" data-k="bg"></div>
-          <div style="background:${s.status === 'kritis' ? 'var(--crit-b)' : s.status === 'tinjau' ? 'var(--warn-b)' : 'var(--ok-b)'};padding:8px 12px"><div class="tiny muted">NILAI TERKOREKSI</div><div style="font:700 24px var(--fm)">${val(t)} <span style="font-size:12px">µSv/jam</span></div><div class="tiny">${s.lim ? 'Batas RS ≤ ' + PR.f(s.lim) : 'Batas belum diatur'}</div></div></div>` : `<div class="mt8 mono">${val(t)} µSv/jam</div>`}
+          <div style="background:${s.status === 'kritis' ? 'var(--crit-b)' : s.status === 'tinjau' ? 'var(--warn-b)' : 'var(--ok-b)'};padding:8px 12px"><div class="tiny muted">Nilai terkoreksi</div><div style="font:700 24px var(--fm)">${val(t)} <span style="font-size:12px">µSv/jam</span></div><div class="tiny">${s.lim ? 'Batas RS ≤ ' + PR.f(s.lim) : 'Batas belum diatur'}</div></div></div>` : `<div class="mt8 mono">${val(t)} µSv/jam</div>`}
           <div class="row mt8">${t.foto_id ? U.fileChip(t.foto_id, 'Foto') : ''}${PR.can('edit') ? `<label class="btn btn-s">${PR.ic('camera')}Ambil foto titik<input type="file" accept="image/*" capture="environment" hidden data-tfoto="${t.id}"></label>${U.btn('Detail', 'editTitik', 'pencil', 'btn-s', `data-id="${t.id}"`)}` : ''}${s.status === 'kritis' && !t.tindak_lanjut ? PR.tag('isi tindak lanjut', 'kritis', 1) : ''}</div></div></div>`; }).join('') || U.empty('Belum ada titik.')}</div>
       <div class="panel mt"><div class="panel-b spread"><span class="small muted">${PR.ic('wifi-off', 'ic-s')} Bisa diisi offline — tersinkron otomatis saat online.</span><a class="btn btn-y" href="#/survei">${PR.ic('check')}Selesai</a></div></div>`;
   }
@@ -150,7 +150,7 @@
 
   PR.page('survei', {
     title: 'Survei Paparan', roles: ['ppr', 'peninjau'],
-    crumb: r => `SURVEI PAPARAN / <b>${r.parts[0] === 'denah' ? 'DENAH INTERAKTIF' : r.parts[0] === 's' ? 'INPUT TITIK' : 'PENGUKURAN DAERAH KERJA'}</b>`,
+    crumb: r => `Survei paparan / <b>${r.parts[0] === 'denah' ? 'Denah interaktif' : r.parts[0] === 's' ? 'Input titik' : 'Pengukuran daerah kerja'}</b>`,
     render: r => { if (r.parts[0] === 'baru') { setTimeout(() => PR.acts.newSurvey({ dataset: { alat: r.q.alat } }), 0); return table(); } return r.parts[0] === 'denah' ? denah() : r.parts[0] === 's' ? surveyDetail(r.parts[1]) : table(); },
     mount: async (root, r) => {
       PR.$$('[data-sf]', root).forEach(el => el.onchange = () => { st[el.dataset.sf] = el.value; PR.render(); });

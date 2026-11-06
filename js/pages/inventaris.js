@@ -1,4 +1,4 @@
-/* ProteRad — W-04/W-05 Inventaris: alat radiasi, alat ukur, ruangan, perlengkapan + detail alat */
+/* AlaraGo — W-04/W-05 Inventaris: alat radiasi, alat ukur, ruangan, perlengkapan + detail alat */
 (function (PR) {
   'use strict';
   const U = PR.ui, L = PR.L, A = PR.api;
@@ -116,7 +116,7 @@
     const it = L.tb('Perlengkapan').filter(p => p.ruangan_id === rid);
     const ok = L.PERLENGKAPAN.filter(k => it.some(p => p.item === k && (p.status === 'ada' || p.status === 'tidak perlu'))).length;
     return `<div class="panel"><div class="panel-h"><div><h3>Checklist perlengkapan proteksi radiasi</h3><span class="small muted">10 item sesuai LHI bagian 5 · per ruangan</span></div>
-      <div class="row"><label class="small mono" for="perlRoom">LOKASI</label><select class="inp" id="perlRoom" style="width:auto">${rs.map(r => `<option value="${r.id}" ${r.id === rid ? 'selected' : ''}>${PR.esc(r.nama)}</option>`).join('')}</select><span class="tag ${ok === 10 ? 't-aman' : 't-tinjau'}">[${ok}/10]</span></div></div>
+      <div class="row"><label class="small mono" for="perlRoom">Lokasi</label><select class="inp" id="perlRoom" style="width:auto">${rs.map(r => `<option value="${r.id}" ${r.id === rid ? 'selected' : ''}>${PR.esc(r.nama)}</option>`).join('')}</select><span class="tag ${ok === 10 ? 't-aman' : 't-tinjau'}">${ok}/10</span></div></div>
       <div class="panel-b" style="padding-top:0;padding-bottom:0">${L.PERLENGKAPAN.map((k, i) => { const p = it.find(x => x.item === k) || {}; const bad = p.status !== 'ada' && p.status !== 'tidak perlu';
         return `<div class="list-row" style="${bad ? 'background:var(--crit-b);margin:0 -16px;padding:10px 16px' : ''}"><span class="mono muted">${String(i + 1).padStart(2, '0')}</span><div class="grow"><b>${k}</b><span>${p.tanggal_cek ? 'Dicek ' + PR.d(p.tanggal_cek) : 'Belum dicek'}${p.keterangan ? ' · ' + PR.esc(p.keterangan) : ''}</span></div>
           ${PR.ro() ? PR.tag(p.status || 'belum dicek', bad ? 'kritis' : 'aman') : `<select class="inp" style="width:150px" data-perl="${PR.esc(k)}" data-room="${rid}">${[['', '— status —'], ['ada', 'Ada & laik'], ['belum ada', 'Belum ada'], ['rusak', 'Rusak'], ['tidak perlu', 'Tidak diperlukan']].map(([v, l]) => `<option value="${v}" ${p.status === v ? 'selected' : ''}>${l}</option>`).join('')}</select>`}
@@ -125,12 +125,12 @@
 
   PR.page('inventaris', {
     title: 'Inventaris', roles: ['ppr', 'peninjau'],
-    crumb: r => `INVENTARIS / <b>${r.parts[0] === 'alat' && r.parts[1] ? 'DETAIL ALAT' : (r.parts[0] || 'ALAT RADIASI').replace('-', ' ').toUpperCase()}</b>`,
+    crumb: r => `Inventaris / <b>${r.parts[0] === 'alat' && r.parts[1] ? 'Detail alat' : (r.parts[0] || 'Alat radiasi').replace('-', ' ').replace(/^./, c => c.toUpperCase())}</b>`,
     render: r => {
       const tab = r.parts[0] || 'alat';
       if (tab === 'alat' && r.parts[1]) return detail(r.parts[1]);
       const acts = { alat: `${U.btn('Impor Excel', 'impAlat', 'file-up')}${U.btn('Tambah alat', 'addAlat', 'plus', 'btn-y')}`, 'alat-ukur': U.btn('Tambah alat ukur', 'addMeter', 'plus', 'btn-y'), ruangan: U.btn('Tambah ruangan', 'addRoom', 'plus', 'btn-y'), perlengkapan: '' }[tab];
-      return `${U.head('INVENTARIS FASILITAS RADIOLOGI', 'Alat pemanfaat radiasi, alat ukur surveimeter, ruangan, dan perlengkapan proteksi.', `<button class="btn" data-act="expInv">${PR.ic('download')}Ekspor daftar</button>${acts}`)}
+      return `${U.head('Inventaris fasilitas radiologi', 'Alat pemanfaat radiasi, alat ukur surveimeter, ruangan, dan perlengkapan proteksi.', `<button class="btn" data-act="expInv">${PR.ic('download')}Ekspor daftar</button>${acts}`)}
         ${tabs(tab)}${tab === 'alat' ? alatList() : tab === 'alat-ukur' ? meterList() : tab === 'ruangan' ? roomList() : perlList(r.q)}`;
     },
     mount: (root, r) => {
@@ -146,7 +146,7 @@
     const need = L.needResurvey(a), last = L.lastSurvey(a.id), riw = L.tb('Riwayat_Alat').filter(h => h.alat_id === id).sort((x, y) => y.tanggal.localeCompare(x.tanggal));
     const docs = L.tb('Dokumen').filter(d => d.objek_tipe === 'alat' && d.objek_id === id);
     const room = L.get('Ruangan', a.ruangan_id) || {};
-    return `<div class="page-head"><div><div class="eyebrow"><a href="#/inventaris">INVENTARIS</a> / ALAT RADIASI / DETAIL & RIWAYAT</div><h1 style="margin-top:6px">${PR.esc(L.alatName(a))}</h1><div class="row mt8">${PR.tag(a.status_operasi === 'nonaktif' ? 'tidak digunakan' : 'aktif', 'netral', 1)}${PR.tag(a.status_balis === 'terdaftar' ? 'terdaftar di BALIS' : 'BALIS: ' + (a.status_balis || 'belum'), a.status_balis === 'terdaftar' ? 'netral' : 'tinjau', 1)}</div></div>
+    return `<div class="page-head"><div><div class="eyebrow"><a href="#/inventaris">Inventaris</a> / Alat radiasi / detail & riwayat</div><h1 style="margin-top:6px">${PR.esc(L.alatName(a))}</h1><div class="row mt8">${PR.tag(a.status_operasi === 'nonaktif' ? 'tidak digunakan' : 'aktif', 'netral', 1)}${PR.tag(a.status_balis === 'terdaftar' ? 'terdaftar di BALIS' : 'BALIS: ' + (a.status_balis || 'belum'), a.status_balis === 'terdaftar' ? 'netral' : 'tinjau', 1)}</div></div>
       <div class="actions">${U.btn('Ubah data', 'addAlat', 'pencil', '', `data-id="${a.id}"`)}${U.btn('Catat perbaikan / servis', 'addRiw', 'history', 'btn-y', `data-alat="${a.id}"`)}<button class="btn" data-act="print">${PR.ic('printer')}Cetak</button></div></div>
       ${need ? `<div class="ban ban-crit">${PR.ic('triangle-alert', 'ic-l')}<div class="grow"><b>${PR.esc(need.jenis)} tercatat ${PR.d(need.tanggal)} — survei paparan ulang diperlukan</b><p>Perba BAPETEN 4/2020 Ps. 32: pemantauan paparan dilakukan setelah perbaikan alat, perubahan perangkat lunak, atau renovasi ruang.</p></div>${U.btn('Input hasil survei', '', 'radar', 'btn-y', `data-go="#/survei/baru?alat=${a.id}"`)}</div>` : ''}
       <div class="grid g4">
@@ -170,6 +170,6 @@
   }
 
   PR.acts.expInv = () => PR.download(`inventaris-${PR.today()}.csv`, PR.toCSV(L.tb('Alat').map(a => Object.assign({}, a, { ruangan: L.ruangName(a.ruangan_id) })), ['ruangan', 'jenis', 'merek', 'tipe', 'no_seri', 'kv_ma', 'no_izin', 'izin_sd', 'ukes_no', 'ukes_sd', 'status_balis']));
-  PR.acts.impAlat = () => PR.modal({ title: 'Impor alat dari Excel / CSV', body: `<p class="small" style="margin-top:0">Kolom: ${['kategori (alat/surveimeter)', 'ruangan', 'jenis', 'merek', 'tipe', 'no_seri', 'no_izin', 'izin_sd', 'ukes_sd', 'kalibrasi_sd', 'fk'].join(', ')}. Tanggal format YYYY-MM-DD atau DD/MM/YYYY.</p><label class="drop">${PR.ic('file-up')} Pilih berkas <b>.xlsx / .csv</b><input type="file" accept=".xlsx,.xls,.csv" hidden id="impA"></label><div id="impRes" class="mt8 small"></div><div class="mt8"><button class="link small" data-act="tpl" data-k="alat">Unduh template</button></div>`,
+  PR.acts.impAlat = () => PR.modal({ title: 'Impor alat dari Excel / CSV', body: `<p class="small" style="margin-top:0">Kolom: ${['kategori (alat/surveimeter)', 'ruangan', 'jenis', 'merek', 'tipe', 'no_seri', 'no_izin', 'izin_sd', 'ukes_sd', 'kalibrasi_sd', 'fk'].join(', ')}. Tanggal format Yyyy-mm-dd atau Dd/mm/yyyy.</p><label class="drop">${PR.ic('file-up')} Pilih berkas <b>.xlsx / .csv</b><input type="file" accept=".xlsx,.xls,.csv" hidden id="impA"></label><div id="impRes" class="mt8 small"></div><div class="mt8"><button class="link small" data-act="tpl" data-k="alat">Unduh template</button></div>`,
     onMount: (m, close) => { PR.$('#impA', m).onchange = async e => { try { const x = await PR.importRows(e.target.files[0], 'alat'); if (x.errs.length) { PR.$('#impRes', m).innerHTML = x.errs.slice(0, 5).map(PR.esc).join('<br>'); return; } const n = PR.commitImport('alat', x.data); close(); PR.toast(n + ' data diimpor', 'ok'); PR.render(); } catch (er) { PR.toast(er.message, 'err'); } }; } });
 })(window.PR);

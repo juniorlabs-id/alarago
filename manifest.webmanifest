@@ -1,6 +1,6 @@
 {
-  "name": "ProteRad — Protect. Record. Ready.",
-  "short_name": "ProteRad",
+  "name": "AlaraGo — Protect. Record. Ready.",
+  "short_name": "AlaraGo",
   "description": "Rekaman proteksi radiasi untuk Petugas Proteksi Radiasi rumah sakit.",
   "id": "./",
   "start_url": "./#/",
@@ -8,8 +8,8 @@
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone"],
   "orientation": "any",
-  "background_color": "#F2F3F5",
-  "theme_color": "#121212",
+  "background_color": "#F5F5F2",
+  "theme_color": "#F5F5F2",
   "lang": "id",
   "categories": ["medical", "productivity"],
   "icons": [

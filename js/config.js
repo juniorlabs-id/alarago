@@ -1,5 +1,5 @@
 /* ============================================================
-   ProteRad — KONFIGURASI FRONTEND
+   AlaraGo — KONFIGURASI FRONTEND
    Diisi sekali oleh penjual sebelum deploy ke GitHub Pages.
    ============================================================ */
 window.PR_CONFIG = {

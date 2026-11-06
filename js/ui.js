@@ -1,4 +1,4 @@
-/* ProteRad — shell aplikasi (sidebar bisa diciutkan, bottom nav HP), router, aksi global */
+/* AlaraGo — shell aplikasi (sidebar bisa diciutkan, bottom nav HP), router, aksi global */
 (function (PR) {
   'use strict';
   const U = PR.ui = {};
@@ -18,8 +18,8 @@
   PR.ro = () => !PR.can('edit');
 
   const NAV = [
-    ['dasbor', 'Dasbor', 'layout-dashboard'], ['kalender', 'Kalender Kepatuhan', 'calendar-check'], ['inventaris', 'Inventaris', 'boxes'], ['dosis', 'Kartu Dosis', 'id-card'],
-    ['dc', 'Pembatas Dosis', 'gauge'], ['survei', 'Survei Paparan', 'radar'], ['arsip', 'Arsip Dokumen', 'folder-open'], ['inspeksi', 'Siap Inspeksi', 'clipboard-check']
+    ['dasbor', 'Dasbor', 'layout-dashboard'], ['kalender', 'Kalender kepatuhan', 'calendar-check'], ['inventaris', 'Inventaris', 'boxes'], ['dosis', 'Kartu dosis', 'id-card'],
+    ['dc', 'Pembatas dosis', 'gauge'], ['survei', 'Survei paparan', 'radar'], ['arsip', 'Arsip dokumen', 'folder-open'], ['inspeksi', 'Siap inspeksi', 'clipboard-check']
   ];
   U.badges = () => {
     if (!PR.db) return {};
@@ -41,26 +41,26 @@
     const mob = me.role === 'peninjau' ? [['persetujuan', 'Setuju', 'stamp'], ['dasbor', 'Dasbor', 'layout-dashboard'], ['dosis', 'Dosis', 'id-card'], ['inspeksi', 'Inspeksi', 'clipboard-check']] : [['dasbor', 'Dasbor', 'layout-dashboard'], ['kalender', 'Kalender', 'calendar-check'], ['dosis', 'Dosis', 'id-card'], ['inspeksi', 'Inspeksi', 'clipboard-check']];
     return `<div class="app">
       <aside class="side" aria-label="Menu utama">
-        <div class="side-head">${PR.logo()}<div class="brand"><b>PROTERAD</b><span>PROTECT · RECORD · READY</span></div><button class="side-tog" data-act="toggleSide"></button></div>
+        <div class="side-head">${PR.logo()}<div class="brand"><b>AlaraGo</b><span>Protect. Record. Ready.</span></div><button class="side-tog" data-act="toggleSide"></button></div>
         <nav class="nav">${items.map(([k, l, i]) => `<a href="#/${k}" data-nav="${k}" data-tip="${l}">${PR.ic(i)}<span class="lbl">${l}</span>${b[k] ? `<span class="bdg">${b[k]}</span><span class="dot"></span>` : ''}</a>`).join('')}</nav>
         <div class="side-foot">
           <nav class="nav" style="padding:4px 0">${me.role === 'ppr' ? `<a href="#/pengaturan" data-nav="pengaturan" data-tip="Pengaturan">${PR.ic('settings')}<span class="lbl">Pengaturan</span></a>` : ''}
           <a href="#" data-act="install" data-tip="Pasang aplikasi" id="installNav" ${PR.installEvt ? '' : 'hidden'}>${PR.ic('monitor-smartphone')}<span class="lbl">Pasang aplikasi</span></a>
           <a href="#" data-act="logout" data-tip="Keluar">${PR.ic('log-out')}<span class="lbl">Keluar</span></a></nav>
-          <div class="side-user"><span class="avatar">${PR.esc(PR.initials(me.nama))}</span><div><b>${PR.esc(me.nama || '')}</b><span>[${me.role === 'peninjau' ? 'PENINJAU · HANYA BACA' : 'PPR'}]</span></div></div>
+          <div class="side-user"><span class="avatar">${PR.esc(PR.initials(me.nama))}</span><div><b>${PR.esc(me.nama || '')}</b><span>${me.role === 'peninjau' ? 'Peninjau · hanya baca' : 'Petugas proteksi radiasi'}</span></div></div>
         </div>
       </aside>
       <div class="main">
         <header class="top">
-          <div class="m-brand">${PR.logo()}<b>PROTERAD</b></div>
+          <div class="m-brand">${PR.logo()}<b>AlaraGo</b></div>
           <div class="crumb" id="crumb"></div>
-          ${me.role === 'peninjau' ? '<span class="ro-tag hide-m">[HANYA BACA]</span>' : ''}
+          ${me.role === 'peninjau' ? '<span class="ro-tag hide-m">Hanya baca</span>' : ''}
           <span class="rs-pill" title="Rumah sakit aktif">${PR.ic('building-2', 'ic-s')}<span class="trunc">${PR.esc(rs.nama || 'RS belum diatur')}${rs.instalasi ? ' · ' + PR.esc(rs.instalasi) : ''}</span></span>
           <button class="icon-btn" data-go="#/kalender" title="Jatuh tempo" aria-label="Jatuh tempo">${PR.ic('bell')}${b.kalender ? '<span class="pip"></span>' : ''}</button>
         </header>
-        ${PR.api.isDemo() ? `<div class="banner-lic no-print" style="border-top-width:4px;padding:8px 24px">${PR.ic('info')}<span class="grow" style="flex:1"><b>Mode demo</b><span class="hide-m"> — data contoh tersimpan di browser ini saja.</span></span><span class="seg" style="background:#1F1F1F;border-color:#333">${[['ppr', 'PPR'], ['peninjau', 'Peninjau'], ['pekerja', 'Pekerja']].map(([r, l]) => `<button data-act="demoRole" data-r="${r}" class="${me.role === r ? 'on' : ''}" style="color:${me.role === r ? '#121212' : '#fff'}">${l}</button>`).join('')}</span><button class="btn btn-s btn-y" data-act="demoReset">Reset</button></div>` : ''}
+        ${PR.api.isDemo() ? `<div class="banner-lic no-print" style="padding:8px 28px">${PR.ic('info')}<span class="grow" style="flex:1"><b>Mode demo</b><span class="hide-m"> — data contoh tersimpan di browser ini saja.</span></span><span class="seg" style="background:rgba(255,255,255,.6)">${[['ppr', 'PPR'], ['peninjau', 'Peninjau'], ['pekerja', 'Pekerja']].map(([r, l]) => `<button data-act="demoRole" data-r="${r}" class="${me.role === r ? 'on' : ''}">${l}</button>`).join('')}</span><button class="btn btn-s btn-y" data-act="demoReset">Reset</button></div>` : ''}
         ${PR.lic && PR.lic.status === 'berakhir' ? `<div class="banner-lic no-print">${PR.ic('lock')}<span style="flex:1">Langganan berakhir ${PR.d(PR.lic.berlaku_sd)}. Data tetap bisa dilihat & diekspor. Hubungi ${PR.esc(window.PR_CONFIG.SELLER_CONTACT)} untuk perpanjangan.</span></div>` : ''}
-        ${PR.lic && PR.lic.paket === 'Uji coba' && PR.lic.status !== 'berakhir' ? `<div class="banner-lic no-print" style="border-top-width:4px;padding:8px 24px">${PR.ic('clock')}<span style="flex:1">Uji coba berakhir ${PR.d(PR.lic.berlaku_sd)} (${PR.hcount(PR.left(PR.lic.berlaku_sd))}).</span></div>` : ''}
+        ${PR.lic && PR.lic.paket === 'Uji coba' && PR.lic.status !== 'berakhir' ? `<div class="banner-lic no-print" style="padding:8px 28px">${PR.ic('clock')}<span style="flex:1">Uji coba berakhir ${PR.d(PR.lic.berlaku_sd)} (${PR.hcount(PR.left(PR.lic.berlaku_sd))}).</span></div>` : ''}
         <div class="offline-bar no-print" id="syncbar" hidden></div>
         <main class="page" id="page"></main>
       </div>
@@ -69,8 +69,8 @@
   };
   PR.acts.mobileMenu = (el, e) => {
     e.preventDefault();
-    const extra = PR.me.role === 'peninjau' ? [['kalender', 'Kalender Kepatuhan', 'calendar-check', 'Jatuh tempo kepatuhan'], ['inventaris', 'Inventaris', 'boxes', 'Alat, alat ukur, ruangan'], ['dc', 'Pembatas Dosis', 'gauge', 'Nilai DC per profesi'], ['survei', 'Survei Paparan', 'radar', 'Laju dosis daerah kerja'], ['arsip', 'Arsip Dokumen', 'folder-open', 'Dokumen berlaku & terkendali']]
-      : [['inventaris', 'Inventaris', 'boxes', 'Alat, alat ukur, ruangan, perlengkapan'], ['dc', 'Pembatas Dosis', 'gauge', 'Hitung & kaji ulang DC'], ['survei', 'Survei Paparan', 'radar', 'Survei daerah kerja & denah'], ['arsip', 'Arsip Dokumen', 'folder-open', 'Dokumen, SOP, laporan'], ['pengaturan', 'Pengaturan', 'settings', 'Akses, notifikasi, lisensi']];
+    const extra = PR.me.role === 'peninjau' ? [['kalender', 'Kalender kepatuhan', 'calendar-check', 'Jatuh tempo kepatuhan'], ['inventaris', 'Inventaris', 'boxes', 'Alat, alat ukur, ruangan'], ['dc', 'Pembatas dosis', 'gauge', 'Nilai DC per profesi'], ['survei', 'Survei paparan', 'radar', 'Laju dosis daerah kerja'], ['arsip', 'Arsip dokumen', 'folder-open', 'Dokumen berlaku & terkendali']]
+      : [['inventaris', 'Inventaris', 'boxes', 'Alat, alat ukur, ruangan, perlengkapan'], ['dc', 'Pembatas dosis', 'gauge', 'Hitung & kaji ulang DC'], ['survei', 'Survei paparan', 'radar', 'Survei daerah kerja & denah'], ['arsip', 'Arsip dokumen', 'folder-open', 'Dokumen, SOP, laporan'], ['pengaturan', 'Pengaturan', 'settings', 'Akses, notifikasi, lisensi']];
     PR.modal({ title: 'Menu', body: `<div class="stack" style="gap:0">${extra.map(([k, l, i, d]) => `<a class="list-row" href="#/${k}" data-x style="text-decoration:none">${PR.ic(i, 'ic-l')}<div class="grow"><b>${l}</b><span>${d}</span></div>${PR.ic('chevron-right')}</a>`).join('')}
       ${PR.installEvt ? `<button class="list-row link" data-act="install" style="text-decoration:none;width:100%;text-align:left">${PR.ic('monitor-smartphone', 'ic-l')}<div class="grow"><b>Pasang aplikasi</b><span>Tambahkan ke layar utama</span></div></button>` : ''}
       <button class="list-row link" data-act="logout" style="text-decoration:none;width:100%;text-align:left">${PR.ic('log-out', 'ic-l')}<div class="grow"><b>Keluar</b><span>${PR.esc(PR.me.nama)}</span></div></button></div>` });
@@ -100,14 +100,14 @@
     }
     const def = PR.routes[name]; if (!def) return PR.go('#/masuk');
     const full = def.full || PR.me && PR.me.role === 'pekerja';
-    if (full) { mountedRole = null; root.innerHTML = def.render(r); def.mount && def.mount(root, r); document.title = (def.title ? def.title + ' · ' : '') + 'ProteRad'; window.scrollTo(0, 0); return; }
+    if (full) { mountedRole = null; root.innerHTML = def.render(r); def.mount && def.mount(root, r); document.title = (def.title ? def.title + ' · ' : '') + 'AlaraGo'; window.scrollTo(0, 0); return; }
     const key = PR.me.role + '|' + (PR.lic && PR.lic.status) + '|' + JSON.stringify(U.badges()) + PR.api.isDemo();
     if (mountedRole !== key || !PR.$('#page')) { root.innerHTML = U.shell(); mountedRole = key; U.sideIcon(); }
     PR.$$('[data-nav]').forEach(a => a.classList.toggle('on', a.dataset.nav === name));
     const page = PR.$('#page');
     try { page.innerHTML = def.render(r); } catch (e) { console.error(e); page.innerHTML = `<div class="ban ban-crit">${PR.ic('triangle-alert')}<div class="grow"><b>Halaman gagal dimuat</b><p>${PR.esc(e.message)}</p></div></div>`; }
     PR.$('#crumb').innerHTML = def.crumb ? def.crumb(r) : PR.esc(def.title || '');
-    document.title = (def.title || 'ProteRad') + ' · ProteRad';
+    document.title = (def.title || 'AlaraGo') + ' · AlaraGo';
     def.mount && def.mount(page, r);
     if (U.lastHash !== r.hash.split('?')[0]) window.scrollTo(0, 0);
     U.lastHash = r.hash.split('?')[0];
