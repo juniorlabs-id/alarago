@@ -237,20 +237,32 @@
     root.innerHTML = shell(`<div class="panel"><div class="panel-b"><h2 style="margin-top:0">Masukkan PIN</h2><input class="inp mono" id="pin" type="password" inputmode="numeric" maxlength="6" style="font-size:24px;height:54px;letter-spacing:.4em"><button class="btn btn-y btn-b mt" id="go">Buka</button><p class="small muted mt8">Sisa percobaan: ${5 - (sv.gagal || 0)}</p></div></div>`);
     $('#go').onclick = async () => {
       try { const key = await kunciPin($('#pin').value, sv.salt); const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64u(sv.iv) }, key, unb64u(sv.ct)); sv.gagal = 0; LS.set(WK, sv); muat(JSON.parse(new TextDecoder().decode(pt))); }
-      catch (e) { sv.gagal = (sv.gagal || 0) + 1; if (sv.gagal >= 5) { LS.del(WK); PR.toast('5× PIN salah — akses di perangkat ini dihapus. Pindai ulang QR.', 'err'); return renderPekerja({}); } LS.set(WK, sv); PR.toast('PIN salah', 'err'); renderPekerja({}); }
+      catch (e) { sv.gagal = (sv.gagal || 0) + 1; if (sv.gagal >= 5) { LS.del(WK); LS.del('poc_pekerja_pkg'); PR.toast('5× PIN salah — akses di perangkat ini dihapus. Pindai ulang QR.', 'err'); return renderPekerja({}); } LS.set(WK, sv); PR.toast('PIN salah', 'err'); renderPekerja({}); }
     };
     async function muat(cr) {
-      root.innerHTML = shell('<div class="sk"></div><div class="sk"></div>');
-      try {
-        const t0 = performance.now(); const r = await relay('ambil', { p: cr.p }, urlDep(cr.r)); const d = await buka(cr.k, r.data); const ms = Math.round(performance.now() - t0);
+      const CK = 'poc_pekerja_pkg';
+      const tampil = (d, info) => {
         const tot = d.dosis.reduce((s, x) => s + PR.n(x.hp10), 0);
         root.innerHTML = shell(`<div class="panel"><div class="panel-b"><h2 style="margin:0">${esc(d.pekerja.nama)}</h2><p class="small muted" style="margin:4px 0 0">${esc(d.pekerja.profesi)} · ${esc(d.pekerja.npr)} · ${esc(d.rs)}</p></div></div>
           <div class="panel mt"><div class="panel-b"><div class="eyebrow">Dosis Hp(10) 2026</div><div style="font:700 40px var(--fm)">${PR.f(tot)} <span style="font-size:16px">mSv</span></div>
           ${d.dosis.map(x => `<div class="list-row"><div class="grow"><b>${esc(x.periode)} ${esc(x.tahun)}</b><span class="mono">${PR.f(PR.n(x.hp10))} mSv</span></div>${x.dibaca_pada ? `<span class="small">${PR.ic('circle-check', 'ic-s')} dibaca</span>` : `<button class="btn btn-s btn-y" data-baca="${esc(x.id)}">Sudah saya baca</button>`}</div>`).join('')}</div></div>
-          <p class="small muted mt">Data diambil & dibuka di HP ini dalam ${ms} ms. Relay hanya menyimpan versi terkunci.</p><button class="btn btn-s" id="kel">Kunci (keluar)</button>`);
+          <p class="small muted mt"><span id="info">${info}</span> Relay hanya menyimpan versi terkunci.</p><button class="btn btn-s" id="kel">Kunci (keluar)</button>`);
         root.querySelectorAll('[data-baca]').forEach(b => b.onclick = async () => { b.disabled = true; try { await relay('balas', { p: cr.p, data: await kunci(cr.k, { t: 'baca', dosis_id: b.dataset.baca, waktu: new Date().toISOString() }) }, urlDep(cr.r)); b.outerHTML = '<span class="small">✓ terkirim ke PPR</span>'; } catch (e) { PR.toast(e.message, 'err'); b.disabled = false; } });
         $('#kel').onclick = () => renderPekerja({});
-      } catch (e) { root.innerHTML = shell(`<div class="ban ban-crit">${PR.ic('triangle-alert')}<div class="grow">${esc(e.message)}</div></div>`); }
+      };
+      let shown = false;
+      const c = LS.get(CK, null);
+      if (c && c.p === cr.p) { try { const t = performance.now(); const d = await buka(cr.k, c.data); tampil(d, `Tampil dari HP ini dalam ${Math.round(performance.now() - t)} ms · memeriksa pembaruan…`); shown = true; } catch (e) { } }
+      if (!shown) root.innerHTML = shell('<div class="sk"></div><div class="sk"></div><p class="small muted">Mengambil data dari relay…</p>');
+      try {
+        const t0 = performance.now(); const r = await relay('ambil', { p: cr.p }, urlDep(cr.r)); const t1 = performance.now();
+        const d = await buka(cr.k, r.data); const t2 = performance.now();
+        LS.set(CK, { p: cr.p, data: r.data });
+        tampil(d, `Diperbarui dari relay: ambil ${Math.round(t1 - t0)} ms · buka kunci ${Math.round(t2 - t1)} ms.`);
+      } catch (e) {
+        if (!shown) root.innerHTML = shell(`<div class="ban ban-crit">${PR.ic('triangle-alert')}<div class="grow">${esc(e.message)}</div></div>`);
+        else { const i = $('#info'); if (i) i.textContent = 'Tidak bisa memeriksa pembaruan (' + e.message + '). Menampilkan data terakhir.'; if (e.message && /tidak berlaku|berakhir/i.test(e.message)) { LS.del(CK); root.innerHTML = shell(`<div class="ban ban-crit">${PR.ic('triangle-alert')}<div class="grow">${esc(e.message)}</div></div>`); } }
+      }
     }
   }
 
